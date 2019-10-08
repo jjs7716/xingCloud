@@ -1,0 +1,191 @@
+<html>
+<head>
+    <title>我的网盘</title>
+    <script src="static/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="static/css/bootstrap.min.css" />
+    <script src="static/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script async="false" src="static/js/creatFile.js" type="text/javascript" charset="utf-8"></script>
+    <style>
+        #title{
+            width: 100%;
+            height: 10%;
+            position:relative;
+            font-size: 17px;
+        }
+        td,th{
+            vertical-align: bottom;
+        }
+        #titleUser{
+            position:relative;
+            float: right;
+            right: 20px;
+        }
+        #titleUl{
+            position:relative;
+            left: 11%;
+            width: 89%;
+            top: 50%;
+        }
+        #titleForm{
+            position:relative;
+            left: 30%;
+            width: 30%;
+        }
+        #left{
+            position:relative;
+            width: 9%;
+        }
+        #main{
+            position: absolute;
+            width: 89%;
+            top: 10%;
+            left: 10%;
+        }
+    </style>
+</head>
+<body>
+<div id="title">
+<!--    <img src="${pageContext.request.contextPath}/static/images/title.png" height="55%" width="50%" style="position:absolute; z-index:-1;top: 20%"/>-->
+    <div id="titleUser"><img src="/static/images/background.jpeg" alt="38*38" class="img-circle" style="width: 38px;height: 38px">&nbsp;&nbsp;${user.username}&nbsp;&nbsp;&nbsp;&nbsp;<a href="">设置</a>&nbsp;&nbsp;<a href="">退出</a></div>
+
+    <ul class="nav nav-pills" id="titleUl">
+        <li role="presentation" class="active"><a href="#">回收站</a></li>
+    </ul>
+    <form class="navbar-form " role="search" id="titleForm">
+        <div class="form-group">
+            <input type="text" class="form-control" placeholder="搜索你的文件">
+        </div>
+        <button type="submit" class="btn btn-default">查找</button>
+    </form>
+</div>
+<div id="left" class="btn-group-vertical btn-group-lg" role="group" aria-label="...">
+        <button type="button" class="btn btn-default" onclick="location='transfer?transfer=main'">我的文件</button>
+        <button type="button" class="btn btn-default" onclick="">我的好友</button>
+        <button type="button" class="btn btn-default" onclick="">我的分享</button>
+        <button type="button" class="btn btn-default" onclick="location='transfer?transfer=recycle'">回收站</button>
+</div>
+<div id="main">
+    <form id="mainId">
+    <table class="table table-hover">
+        <thead>
+        <th width="3%"><input type="checkbox" id="checkAll" onclick="checkall()"></th>
+        <th width="50%">文件名</th>
+        <th>剩余天数</th>
+        <th width="18%">
+            <input class="btn btn-success" type="button" onclick="batch('recover')" value="批量恢复">
+            <input class="btn btn-danger" type="button" onclick="batch('delete')" value="批量删除">
+        </th>
+        </thead>
+        <tbody id="tbody">
+        </tbody>
+    </table>
+    </form>
+</div>
+</body>
+<script>
+    var pathArray = window.location.pathname.split('/');
+    var secondLevelLocation = pathArray[1];
+    var pathUrl = encodeURI(window.location.protocol+"//"+ window.location.host+"/"+secondLevelLocation);
+    var username=$.cookie("cookieUsername");
+    var userId=$.cookie("cookieUserId");
+
+    $(document).ready(function () {
+        $("#nickname").text(username);
+        recycle();
+    });
+
+    //执行主方法
+    function recycle() {
+        $.ajax({
+            url: pathUrl + "/recycle",
+            contentType: 'application/json; charset=UTF-8',
+            dataType: "json",
+            type: "post",
+            success: function (result) {
+                if (result.status == true) {
+                    folderList = result.data.folderList;
+                    fileList = result.data.fileList;
+                    creatRecycleList(folderList,fileList);
+                } else {
+                    $("#error").text(result.msg);
+                }
+            }
+        });
+    }
+
+    //创建回收站列表
+    function creatRecycleList(folderList, fileList) {
+        $("#tbody").empty();
+        creatRecycleFolderList(folderList);
+        creatRecycleFileList(fileList);
+    }
+
+    //创建回收站文件夹列表
+    function creatRecycleFolderList(folderList) {
+        for(var i=0;i<folderList.length;i++){
+            var folder=folderList[i];
+            $("#tbody").append("            <tr>\n" +
+                "                <td>\n" +
+                "                    <input type=\"checkbox\" id=\"folderId"+i+"\" name=\"folderId\" value=\""+folder.folderId+"\">\n" +
+                // "                    <input type=\"checkbox\" id=\"key"+folder.folderId+"\" name=\"fileKey\" value=\"${file.fileKey}\" hidden>\n" +
+                "                </td>\n" +
+                "                <td>"+folder.folderName+"</td>\n" +
+                "                <td>"+folder.deleteDay+"</td>\n" +
+                "                <td width=\"13%\">\n" +
+                "                    <input class=\"btn btn-success\" type=\"button\" onclick=\"recoverFolder("+i+")\" value=\"恢复\">\n" +
+                "                    <input class=\"btn btn-danger\" type=\"button\" onclick=\"deleteFolder("+i+")\" value=\"删除\">\n" +
+                "            </tr>")
+        }
+    }
+
+    //创建回收站文件列表
+    function creatRecycleFileList(fileList) {
+        for(var i=0;i<fileList.length;i++){
+            var file=fileList[i];
+            $("#tbody").append("            <tr>\n" +
+                "                <td>\n" +
+                "                    <input type=\"checkbox\" id=\"fileId"+i+"\" name=\"fileId\" value=\""+file.fileId+"\">\n" +
+                "                    <input type=\"checkbox\" id=\"fileKey"+i+"\" name=\"fileKey\" value=\""+file.fileKey+"\" hidden>\n" +
+                "                </td>\n" +
+                "                <td>"+file.fileName+"</td>\n" +
+                "                <td>"+file.updateTime+"</td>\n" +
+                "                <td width=\"13%\">\n" +
+                "                    <input class=\"btn btn-success\" type=\"button\" onclick=\"recoverFile("+i+")\" value=\"恢复\">\n" +
+                "                    <input class=\"btn btn-danger\" type=\"button\" onclick=\"deleteFile("+i+")\" value=\"删除\">\n" +
+                "            </tr>")
+        }
+    }
+
+    //恢复文件夹
+    function recoverFolder(i) {
+        $("#folderId"+i).closest("tr").attr("hidden","hidden");
+        $("#folderId"+i).attr("checked","checked");
+        batch("recover");
+    }
+
+    //恢复文件
+    function recoverFile(i) {
+        $("#fileId"+i).closest("tr").attr("hidden","hidden");
+        $("#fileId"+i).attr("checked","checked");
+        batch("recover");
+    }
+
+    //彻底删除文件夹
+    function deleteFolder(i) {
+        $("#folderId"+i).closest("tr").attr("hidden","hidden");
+        $("#folderId"+i).attr("checked","checked");
+        batch("delete");
+    }
+
+    //彻底删除文件
+    function deleteFile(i) {
+        $("#fileId"+i).closest("tr").attr("hidden","hidden");
+        $("#fileId"+i).attr("checked","checked");
+        batch("delete");
+    }
+
+</script>
+</html>
+

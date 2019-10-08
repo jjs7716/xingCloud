@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.UserDao">
+     <!--    自定义Map类型,对应resultMap type为实体类的位置 property对应实体类中的名称，column对应数据库中的名称-->
+    <resultMap id="userMap" type="com.domain.User">
+        <!-- 主键字段的对应 -->
+        <id property="userId" column="user_id"></id>
+        <!--非主键字段的对应-->
+        <result property="username" column="username"></result>
+        <result property="nickname" column="nickname"></result>
+        <result property="password" column="password"></result>
+        <result property="strPassword" column="str_password"></result>
+        <result property="phoneNum" column="phone_num"></result>
+        <result property="userEmail" column="user_email"></result>
+        <result property="lastLoginTime" column="last_login_time"></result>
+        <result property="regTime" column="reg_time"></result>
+        <result property="state" column="state"></result>
+        <result property="realName" column="real_name"></result>
+        <result property="idCard" column="id_card"></result>
+        <result property="userImg" column="user_img"></result>
+    </resultMap>
+    <select id="checkUser" resultMap="userMap">
+        select * from user where username=#{username} and password=#{password}
+    </select>
+
+    <select id="checkUsername" resultMap="userMap" parameterType="String">
+        select username from user where username=#{username}
+    </select>
+
+    <insert id="insert">
+        insert into user (user_id,username,nickname,password,str_password,phone_num,user_email,last_login_time,reg_time,state,real_name,id_card,user_img)
+        values (#{userId},#{username},#{nickname},#{password},#{strPassword},#{phoneNum},#{userEmail},#{lastLoginTime},#{regTime},#{state},#{realName},#{idCard},#{userImg})
+    </insert>
+
+    <update id="updatePassword" parameterType="com.domain.User">
+        update user set password=#{password},str_password=#{strPassword} where user_id=#{userId}
+    </update>
+
+    <update id="updateLastLoginTime" parameterType="com.domain.User">
+        update user set last_login_time=#{lastLoginTime} where user_id=#{userId}
+    </update>
+
+    <select id="queryByCondition" parameterType="com.domain.User" resultMap="userMap">
+        select * from user
+        <where>
+            <if test="username != null">
+                and  username=#{username}
+            </if>
+            <if test="id != null">
+                and user_id=#{userId}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryByRegTime" resultMap="userMap">
+        select * from user where date(reg_time) between #{beginDate} and #{endDate}
+    </select>
+    <select id="queryByLastLoginTime" resultMap="userMap">
+
+    </select>
+</mapper>
+

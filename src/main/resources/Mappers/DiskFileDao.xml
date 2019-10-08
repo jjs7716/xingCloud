@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.DiskFileDao">
+    <!--    自定义Map类型,对应resultMap type为实体类的位置 property对应实体类中的名称，column对应数据库中的名称-->
+    <resultMap id="diskFileMap" type="com.domain.DiskFile">
+        <!-- 主键字段的对应 -->
+        <id property="fileKey" column="file_key"></id>
+        <!--非主键字段的对应-->
+        <result property="updateUid" column="update_uid"></result>
+        <result property="updateTime" column="update_time"></result>
+        <result property="cateCount" column="cate_count"></result>
+        <result property="zeroDay" column="zero_day"></result>
+    </resultMap>
+
+    <insert id="insertFileInfo">
+        insert into disk_file (file_key,update_uid,update_time,cate_count,zero_day)
+        values(#{fileKey},#{updateUid},#{updateTime},#{cateCount},#{zeroDay})
+    </insert>
+
+    <update id="addCateCount">
+        update disk_file set cate_count=cate_count+1 where file_key=#{fileKey}
+    </update>
+
+    <update id="batchAddCateCount">
+        update disk_file set cate_count=cate_count+1 where file_key in
+        <foreach item="fileKey" index="index" collection="keyList" open="(" separator="," close=")">
+            #{fileKey}
+        </foreach>
+    </update>
+
+    <update id="subtractCateCount">
+        update disk_file set cate_count=cate_count-1 where file_key=#{fileKey}
+    </update>
+
+    <update id="batchSubtractCateCount">
+        update disk_file set cate_count=cate_count-1 where file_key in
+        <foreach item="fileKey" index="index" collection="keyList" open="(" separator="," close=")">
+            #{fileKey}
+        </foreach>
+    </update>
+
+    <select id="queryCateCount" resultMap="diskFileMap">
+        select * from disk_file where file_key=#{fileKey}
+    </select>
+
+    <select id="queryFileInfoByCateCount" resultMap="diskFileMap">
+        select * from disk_file where cate_count &lt; 0;
+    </select>
+</mapper>
+

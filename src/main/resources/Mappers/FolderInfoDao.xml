@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.FolderInfoDao">
+    <!--    自定义Map类型,对应resultMap type为实体类的位置 property对应实体类中的名称，column对应数据库中的名称-->
+    <resultMap id="folderMap" type="com.domain.FolderInfo">
+        <!-- 主键字段的对应 -->
+        <id property="folderId" column="folder_id"></id>
+        <!--非主键字段的对应-->
+        <result property="folderName" column="folder_name"></result>
+        <result property="folderUid" column="folder_uid"></result>
+        <result property="updateTime" column="update_time"></result>
+        <result property="parentId" column="parent_id"></result>
+        <result property="parentName" column="parent_name"></result>
+        <result property="deleteTime" column="delete_time"></result>
+        <result property="deleteDay" column="delete_day"></result>
+        <result property="folderState" column="folder_state"></result>
+    </resultMap>
+<!--插入文件信息-->
+    <insert id="creatFolder">
+        insert into folderinfo (folder_id, folder_name, folder_uid, update_time, parent_id ,parent_name, delete_day, folder_state)
+        values(#{folderId},#{folderName},#{folderUid},#{updateTime},#{parentId},#{parentName},#{deleteDay},#{folderState})
+    </insert>
+<!--彻底删除-->
+    <delete id="deleteFolder">
+        delete from folderinfo where folder_uid=#{folderUid} and folder_id in
+        <foreach collection="folderIdList"  item="folderId" index="index" open="(" separator="," close=")">
+            #{folderId}
+        </foreach>
+    </delete>
+<!--查找正常的文件夹-->
+    <select id="queryFolder" resultMap="folderMap">
+        select * from folderinfo where folder_uid=#{userId} and folder_state = 0 and parent_id=#{folderId};
+    </select>
+<!--查找回收站的文件夹-->
+    <select id="queryFolderByRecycle" resultMap="folderMap">
+        select * from folderinfo where folder_uid=#{userId} and folder_state = 1 and parent_id="";
+    </select>
+<!--重命名文件夹-->
+    <update id="reFolderName">
+        update folderinfo set folder_name=#{newFolderName} where folder_id=#{folderId}
+    </update>
+<!--移动文件夹-->
+    <update id="moveToFolder">
+        update fileinfo set parent_id=#{folderId} where file_id in
+        <foreach item="fileId" index="index" collection="fileIdList" open="(" separator="," close=")">
+        #{fileId}
+        </foreach>
+    </update>
+<!--复制文件夹-->
+    <update id="copyToFolder">
+
+    </update>
+<!--删除-->
+    <update id="recycleFolder">
+        update folderinfo set folder_state =1,delete_time=now(),delete_day=30 where folder_uid=#{folderUid} and folder_id in
+        <foreach collection="folderIdList"  item="folderId" index="index" open="(" separator="," close=")">
+            #{folderId}
+        </foreach>
+    </update>
+<!-- 恢复-->
+    <update id="recoverFolder">
+        update folderinfo set folder_state =0,delete_time="${@utils.BaseUtil@DEFAULT_DELETE_TIME}",
+        delete_day=${@utils.BaseUtil@DEFAULT_DELETE_DAY} where folder_uid=#{folderUid} and folder_id in
+        <foreach collection="folderIdList"  item="folderId" index="index" open="(" separator="," close=")">
+            #{folderId}
+        </foreach>
+    </update>
+</mapper>
+

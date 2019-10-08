@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<html>
+ <head>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+      <title>HTML</title>
+    <!-- 导入JQ 文件 -->
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            var u=0;
+            var p=0;
+            $("#username").keyup(function(){
+                var len=$(this).val().length;
+                var json={"username":$("#username").val()};
+                if(len<=6){
+                    $("#spanUsername").html("<font color='red' size='3' class='error'>用户名太短</font>");
+                }else{
+                    $.ajax({
+                        url:"checkUser", // 请求路径
+                        type:"POST" , //请求方式
+                        data:JSON.stringify(json),
+                        contentType: 'application/json; charset=UTF-8',
+                        dataType:"json",
+                        success:function (result) {
+                            if(result.status==true){
+                                $("#spanUsername").html("<font color='green' size='3'>"+result.msg+"</font>");
+                                u=1;
+                            }else{
+                                $("#spanUsername").html("<font color='red' size='3' class='error'>"+result.msg+"</font>");
+                                u=0;
+                            }
+                        },
+                        error:function (){
+                            u=0;
+                            alert("服务器出错...")
+                        },
+                    });
+                }
+            });
+            $("#password").keyup(function(){
+                var len=$(this).val().length;
+                if(len<=6){
+                    $("#spanPassword").html("<font color='red' size='3' class='error'>密码太短</font>")
+                    p=0;
+                }else if($(this).val()!=$("#confirmPassword").val()&&$("#confirmPassword").val().length>0){
+                    $("#spanPassword").html("<font color='red' size='3' class='error'>两次密码不相同</font>");
+                    $("#spanConfirmPassword").html("<font color='red' size='3' class='error'>两次密码不相同</font>")
+                    p=0;
+                }else if($(this).val()==$("#confirmPassword").val()){
+                    $("#spanPassword").html("<font color='green' size='3'>密码可用</font>");
+                    $("#spanConfirmPassword").html("<font color='green' size='3' class='error'>密码相同可用</font>");
+                    p=1;
+                }else{
+                    $("#spanPassword").html("<font color='green' size='3'>密码可用</font>")
+                    p=1;
+                }
+            });
+            $("#confirmPassword").keyup(function(){
+                if($(this).val()==$("#password").val()&&$("#password").val().length>6){
+                    $("#spanPassword").html("<font color='green' size='3'>密码可用</font>");
+                    $("#spanConfirmPassword").html("<font color='green' size='3'>密码相同可用</font>");
+                    p=1;
+                }else{
+                    $("#spanPassword").html("<font color='red' size='3' class='error'>两次密码不相同</font>");
+                    $("#spanConfirmPassword").html("<font color='red' size='3' class='error'>两次密码不相同</font>");
+                    p=0;
+                }
+            })
+            $("#regist").click(function () {
+                if(u==1&&p==1){
+                    $("form:first").submit();
+                }else {
+                    console.log("error!")
+                }
+            });
+        })
+    </script>
+    <style>
+        .txt{
+            color: #2AABD2;
+            font-size:large;
+        }
+        /*img {*/
+        /*    float:left;*/
+        /*}*/
+        #error{
+            float: left;
+            color: red;
+            font-size: large;
+            position:relative;
+            left:90px;
+        }
+        #regist{
+            float: left;
+        }
+
+    </style>
+</head>
+<body>
+<!--<%&#45;&#45;        background="${pageContext.request.contextPath}/static/images/background.jpeg"&#45;&#45;%>-->
+
+<div  id="zhuye" style="position:absolute; top:50%; left:50%; width:600px; height:240px; margin-left:-240px; margin-top:-120px;">
+    <form class="form-horizontal " action="register"  method="post">
+        <div class="form-group">
+            <label for="username" class="col-sm-2 control-label"><font class="txt">用户名</font></label>
+            <div class="col-sm-10 form-inline">
+                <input type="text" class="form-control check" name="username" id="username" style="padding-right: 100px;">
+                <span id="spanUsername" ></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="password" class="col-sm-2 control-label"><font class="txt">密码</font></label>
+            <div class="col-sm-10 form-inline">
+                <input type="password" class="form-control check" name="password" id="password"  style="padding-right: 100px;">
+                <span id="spanPassword"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="confirmPassword" class="col-sm-2 control-label"><font class="txt">确认密码</font></label>
+            <div class="col-sm-10 form-inline">
+                <input type="password" class="form-control check" name="confirmPassword" id="confirmPassword" style="padding-right: 100px;">
+                <span id="spanConfirmPassword"></span>
+            </div>
+        </div>
+        <br>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="button" class="btn btn-default" id="regist"><font class="txt">注册</font></button>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <button type="button" class="btn btn-default" onclick="location='index.html'"><font class="txt">取消</font></button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>
