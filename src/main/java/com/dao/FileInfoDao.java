@@ -50,23 +50,23 @@ public interface FileInfoDao {
      * 注:如果是list集合,要和for each里的collection属性对应
      * 例:@Param("list")和collection="list"
      * @param fileIdList
-     * @param fileIdUid
+     * @param fileUid
      */
-    void recycleFile(@Param("fileIdList") List<String> fileIdList,@Param("fileIdUid") String fileIdUid);
+    void recycleFile(@Param("fileIdList") List<String> fileIdList,@Param("fileUid") String fileUid,@Param("folderIdList") List<String> folderIdList);
 
 
     /**
      * 还原文件
      * @param fileIdList
      */
-    void recoverFile(@Param("fileIdList") List<String> fileIdList,@Param("fileIdUid") String fileIdUid);
+    void recoverFile(@Param("fileIdList") List<String> fileIdList,@Param("fileUid") String fileUid,@Param("folderIdList") List<String> folderIdList);
 
 
     /**
      * 彻底删除
      * @param fileIdList
      */
-    void deleteFile(@Param("fileIdList") List<String> fileIdList,@Param("fileIdUid") String fileIdUid);
+    void deleteFile(@Param("fileIdList") List<String> fileIdList,@Param("fileUid") String fileUid,@Param("folderIdList") List<String> folderIdList);
 
     /**
      * 条件搜索

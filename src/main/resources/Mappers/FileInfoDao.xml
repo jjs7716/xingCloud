@@ -39,10 +39,24 @@
 
     <!--    删除文件到回收站-->
     <update id="recycleFile">
-        update fileinfo set delete_time=now(),file_state=1,delete_day=30 where file_uid=#{fileIdUid} and file_id in
-        <foreach item="fileId" index="index" collection="fileIdList" open="(" separator="," close=")">
-            #{fileId}
-        </foreach>
+        update fileinfo set delete_time=now(),file_state=1,delete_day=30
+        <where>
+            <if test="fileUid != null and fileUid != ''">
+                and  file_uid=#{fileUid}
+            </if>
+            <if test="folderIdList != null">
+                and parent_id in
+                <foreach item="folderId" index="index" collection="folderIdList" open="(" separator="," close=")">
+                    #{folderId}
+                </foreach>
+            </if>
+            <if test="fileIdList != null">
+                and file_id in
+                <foreach item="fileId" index="index" collection="fileIdList" open="(" separator="," close=")">
+                    #{fileId}
+                </foreach>
+            </if>
+        </where>
     </update>
 
     <!--重命名文件-->
@@ -59,18 +73,45 @@
     <update id="recoverFile">
         update fileinfo set delete_time="${@utils.BaseUtil@DEFAULT_DELETE_TIME}",
         file_state=0,delete_day=${@utils.BaseUtil@DEFAULT_DELETE_DAY}
-        where file_uid=#{fileIdUid} and  file_id in
-        <foreach item="fileId" index="index" collection="fileIdList" open="(" separator="," close=")">
-            #{fileId}
-        </foreach>
+        <where>
+            <if test="fileUid != null and fileUid != ''">
+                and  file_uid=#{fileUid}
+            </if>
+            <if test="folderIdList != null">
+                and parent_id in
+                <foreach item="folderId" index="index" collection="folderIdList" open="(" separator="," close=")">
+                    #{folderId}
+                </foreach>
+            </if>
+            <if test="fileIdList != null">
+                and file_id in
+                <foreach item="fileId" index="index" collection="fileIdList" open="(" separator="," close=")">
+                    #{fileId}
+                </foreach>
+            </if>
+        </where>
     </update>
 
     <!--彻底删除文件-->
     <delete id="deleteFile">
-        delete from fileinfo where file_uid=#{fileIdUid} and  file_id in
-        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
-            #{item}
-        </foreach>
+        delete from fileinfo
+        <where>
+            <if test="fileUid != null and fileUid != ''">
+                and  file_uid=#{fileUid}
+            </if>
+            <if test="folderIdList != null">
+                and parent_id in
+                <foreach item="folderId" index="index" collection="folderIdList" open="(" separator="," close=")">
+                    #{folderId}
+                </foreach>
+            </if>
+            <if test="fileIdList != null">
+                and file_id in
+                <foreach item="fileId" index="index" collection="fileIdList" open="(" separator="," close=")">
+                    #{fileId}
+                </foreach>
+            </if>
+        </where>
     </delete>
 
 <!--    定时删除在回收站时间小于0天的文件-->
@@ -90,7 +131,6 @@
     <select id="queryByFileKey" resultType="String">
         select file_name from fileinfo where file_key=#{fileKey}
     </select>
-
 
     <select id="search" resultMap="fileMap">
         <bind name="search" value="'%' +searchName + '%'" />

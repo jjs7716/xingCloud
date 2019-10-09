@@ -56,9 +56,6 @@ public class Recycle {
         List<String> fileIdList = (List<String>) data.get("fileIdList");
         List<String> fileKeyList=(List<String>) data.get("fileKeyList");
         List<String> folderIdList = (List<String>) data.get("folderIdList");
-        if(folderIdList.size()<=0){
-            folderIdList.add("");
-        }
         if(RECOVER.equals(control)){
             recover(folderIdList,fileIdList,fileKeyList,userId);
         }else if(RECYCLE.equals(control)){
@@ -76,7 +73,9 @@ public class Recycle {
      * @param userId
      */
     private void recover(List<String> folderIdList,List<String> fileIdList,List<String> fileKeyList,String userId){
-        folderInfoDao.recoverFolder(folderIdList,userId);
+        if(folderIdList.size()>0){
+            folderInfoDao.recoverFolder(folderIdList,userId);
+        }
         if(fileIdList.size()>0){
             fileInfoDao.recoverFile(fileIdList,userId);
             diskFileDao.batchAddCateCount(fileKeyList);
@@ -90,7 +89,9 @@ public class Recycle {
      * @param userId
      */
     private void recycle(List<String> folderIdList,List<String> fileIdList,List<String> fileKeyList,String userId){
-        folderInfoDao.recycleFolder(folderIdList,userId);
+        if(folderIdList.size()>0){
+            folderInfoDao.recycleFolder(folderIdList,userId);
+        }
         if(fileIdList.size()>0){
             fileInfoDao.recycleFile(fileIdList,userId);
             diskFileDao.batchSubtractCateCount(fileKeyList);
@@ -104,7 +105,9 @@ public class Recycle {
      * @param userId
      */
     private void delete(List<String> folderIdList,List<String> fileIdList,String userId) {
-        folderInfoDao.deleteFolder(folderIdList,userId);
+        if(folderIdList.size()>0){
+            folderInfoDao.deleteFolder(folderIdList,userId);
+        }
         if(fileIdList.size()>0){
             fileInfoDao.deleteFile(fileIdList,userId);
         }

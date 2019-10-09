@@ -136,7 +136,6 @@
     var pathUrl = encodeURI(window.location.protocol+"//"+ window.location.host+"/"+secondLevelLocation);
     var username=$.cookie("cookieUsername");
     var userId=$.cookie("cookieUserId");
-
     $(document).ready(function () {
         $("#nickname").text(username);
         main();
@@ -170,9 +169,9 @@
                 "                    <input type=\"checkbox\" id=\"folderId"+i+"\" name=\"folderId\" value=\""+folder.folderId+"\">\n" +
                 // "                    <input type=\"checkbox\" id=\"key"+folder.folderId+"\" name=\"fileKey\" hidden>\n" +
                 "                </td>\n" +
-                "                <td id=\"name"+folder.folderId+"\"><a name='entryFolder'>"+folder.folderName+"</a></td>\n" +
+                "                <td id=\"name"+folder.folderId+"\"><a name='entryFolder' href='#'>"+folder.folderName+"</a></td>\n" +
                 "                <td>-</td>\n" +
-                "                <td>"+folder.updateTime+"</td>\n" +
+                "                <td>"+timeFormat(folder.updateTime,0)+"</td>\n" +
                 "                <td >\n" +
                 "                    <input class=\"btn btn-success\" type=\"button\" onclick=\"downFolder("+i+")\" value=\"下载\">\n" +
                 "                    <input class=\"btn btn-danger\" type=\"button\"  onclick=\"recycleFolder("+i+")\"  value=\"删除\">\n" +
@@ -199,7 +198,7 @@
                 "            </td>\n" +
                 "            <td id=\"name"+file.fileId+"\">"+file.fileName+"</td>\n" +
                 "            <td>"+file.strFileSize+"</td>\n" +
-                "            <td>"+file.updateTime+"</td>\n" +
+                "            <td>"+timeFormat(file.updateTime,0)+"</td>\n" +
                 "            <td >\n" +
                 "                <input class=\"btn btn-success\" type=\"button\" onclick=\"downFile("+i+")\" value=\"下载\">\n" +
                 "                <input class=\"btn btn-danger\" type=\"button\" onclick=\"recycleFile("+i+")\" value=\"删除\">\n" +
@@ -259,56 +258,81 @@
         let nameId="name"+id;
         let newId="newName"+id;
         let oldName=$("#"+nameId).text();
-        $("#"+nameId).text("");
+        if(isFolder==1){
+            $("#"+nameId).children("a").text("");
+        }else {
+            $("#"+nameId).text("");
+        }
         $("#"+nameId).append("<div class=\"input-group\">\n" +
             "                    <input type=\"text\" class=\"form-control\" id="+newId+" value="+oldName+">\n" +
             "                    <span class=\"input-group-btn\">\n" +
             "                    <button class=\"btn btn-success\" onclick=\"confirmReName(&quot;"+id+"&quot;,&quot;"+isFolder+"&quot;)\" type=\"button\">确定</button>\n" +
-            "                    <button class=\"btn btn-danger\" onclick=\"cancelReName(&quot;"+id+"&quot;,&quot;"+oldName+"&quot;)\" type=\"button\">取消</button>\n" +
+            "                    <button class=\"btn btn-danger\" onclick=\"cancelReName(&quot;"+id+"&quot;,&quot;"+oldName+"&quot;,&quot;"+isFolder+"&quot;)\" type=\"button\">取消</button>\n" +
             "                  </span>\n" +
             "                </div>");
     }
 
     //确认重命名
     function confirmReName(id,isFolder) {
-        let fileId=$("#"+"id"+id).val();
+        // let fileId=$("#"+"id"+id).val();
         let nameId="name"+id;
         let newId="newName"+id;
         let newFileName=$("#"+newId).val();
+        if(isFolder==1){
+            for (let i = 0; i < folderList.length; i++) {
+                if(newFileName==folderList[i].folderName){
+                    alert("文件夹名字重复")
+                    return;
+                }
+            }
+        }else {
+            for (let i = 0; i < fileList.length; i++) {
+                if(newFileName==fileList[i].fileName){
+                    alert("文件名字重复")
+                    return;
+                }
+            }
+        }
         $.post(
             pathUrl+"/file/reFileName",
         {
             "isFolder":isFolder,
-            "fileId":fileId,
+            "id":id,
             "newFileName":newFileName
         },
             function(data,status){
-                console.log("Data: " + data + "\nStatus: " + status);
-                $("#"+nameId).text(newFileName);
+                // console.log("Data: " + data + "\nStatus: " + status);
+                // $("#"+nameId).children("a").text(newFileName);
+                main();
         })
     }
 
     // 取消重命名
-    function cancelReName(id,oldName) {
+    function cancelReName(id,oldName,isFolder) {
         let nameId="name"+id;
-        $("#"+nameId).text(oldName);
-        $("#"+nameId).remove("div");
+        if(isFolder==1){
+            $("#"+nameId).children("a").text(oldName);
+        }else{
+            $("#"+nameId).text(oldName);
+        }
+        $("#"+nameId).children("div").remove();
     }
 
     var label=0;
     // 新建文件夹
     function creatFolder() {
+        var oldName="新建文件夹";
         // 标记，创建文件夹后是否点确认，没有则禁止继续创建
         if(label!=1){
             let folderId=md5(new Date().getMilliseconds());
         console.log(folderId);
         $("#tbody").prepend("        <tr id=\"tr"+folderId+"\">\n" +
             "            <td>\n" +
-            "                <input type=\"checkbox\"  value="+folderId+" hidden>\n" +
+            "                <input type=\"checkbox\"  value="+folderId+" >\n" +
             "            </td>\n" +
-            "            <td id=\"folderName"+folderId+"\"><a name='entryFolder'></a></td>\n" +
-            "            <td></td>\n" +
-            "            <td></td>\n" +
+            "            <td id=\"folderName"+folderId+"\"><a name='entryFolder' href='#'></a></td>\n" +
+            "            <td>-</td>\n" +
+            "            <td id=\"time"+folderId+"\"></td>\n" +
             "            <td >\n" +
             "                <input class=\"btn btn-success\" type=\"button\" onclick=\"downFolder(&quot;"+folder.folderId+"&quot;)\" value=\"下载\">\n" +
             "                <input class=\"btn btn-danger\" type=\"button\" onclick=\"deleteFolder(&quot;"+folder.folderId+"&quot;)\" value=\"删除\">\n" +
@@ -320,7 +344,6 @@
             "                </ul>\n" +
             "                </div>\n" +
             "        </tr>");
-        var oldName="新建文件夹";
         $("#"+"folderName"+folderId).append("<div class=\"input-group\">\n" +
             "                    <input type=\"text\" class=\"form-control\" id="+folderId+" value="+oldName+">\n" +
             "                    <span class=\"input-group-btn\">\n" +
@@ -335,28 +358,32 @@
     //确认创建文件夹
     function confirmFolderName(folderId) {
         var folderName=$("#"+folderId).val();
-        $("#folderName"+folderId).children("div").remove();
-        $("#folderName"+folderId).children("a").text(folderName);
+        var cache=folderName;
+        for (let i = 0; i < folderList.length; i++) {
+            if(cache==folderList[i].folderName){
+                cache=folderName+timeFormat(new Date().getTime(),1);
+                i=0;
+            }
+        }
+        folderName=cache;
         $.post(pathUrl+"/folder/creatFolder",
             {
                 "folderId":folderId,
                 "folderName":folderName
             },
             function(data,status){
-                // console.log("Data: " + data + "\nStatus: " + status);
+                main();
                 label=0;
             });
     }
     //取消创建文件夹
     function cancelFolderName(folderId) {
         var nameId="tr"+folderId;
-        console.log(nameId);
         $("#"+nameId).remove();
         label=0;
     }
     //进入文件夹
     function folder(folderId) {
-        console.log("folder执行了！");
         $.ajax({
             url:pathUrl+"/folder/folder",
             data:folderId,
@@ -369,6 +396,23 @@
                 }
             }
         });
+    }
+
+    //格式化时间
+    function timeFormat(time,isRename){
+        var datetime = new Date();
+        datetime.setTime(time);
+        var year = datetime.getFullYear();
+        var month = datetime.getMonth() + 1 < 10 ? "0" + (datetime.getMonth() + 1) : datetime.getMonth() + 1;
+        var date = datetime.getDate() < 10 ? "0" + datetime.getDate() : datetime.getDate();
+        var hour = datetime.getHours()< 10 ? "0" + datetime.getHours() : datetime.getHours();
+        var minute = datetime.getMinutes()< 10 ? "0" + datetime.getMinutes() : datetime.getMinutes();
+        var second = datetime.getSeconds()< 10 ? "0" + datetime.getSeconds() : datetime.getSeconds();
+        if(isRename==0){
+            return year + "-" + month + "-" + date+" "+hour+":"+minute+":"+second;
+        }else if (isRename==1){
+            return "_"+year + month + date+"_"+hour+minute+second;
+        }
     }
 </script>
 </html>

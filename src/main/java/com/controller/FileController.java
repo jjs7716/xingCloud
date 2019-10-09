@@ -4,6 +4,7 @@ import com.domain.*;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.services.DiskFileDaoImpl;
+
 import com.services.FileInfoDaoImpl;
 import com.services.FolderInfoDaoImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,10 +190,6 @@ public class FileController {
         Map<String, String[]> map = request.getParameterMap();
         //将Map转换为List集合
         List<String> idList = XingUtils.ValueToList(map);
-//        if(idList.size()<=0){
-//            dataResult.setStatus(false);
-//            return dataResult;
-//        }
         //根据fileId查找文件名,并返回集合 注:不是真实路径
         List<FileInfo> fileList=fileInfoDaoImpl.queryById(idList);
         //判断如果是一个文件,就不压缩,直接下载
@@ -265,105 +262,6 @@ public class FileController {
         }
     }
 
-//    /**
-//     * 单个删除到回收站
-//     * @param request
-//     * @return
-//     */
-//    @RequestMapping(path = "/recycle")
-//    public String recycle(HttpServletRequest request){
-//        //获得文件ID
-//        String fileId = request.getParameter("fileId");
-//        //标记删除到回收站
-//        fileInfoDaoImpl.recycle(DateUtil.nowStrTime(),fileId);
-//        return "success";
-//    }
-
-//    /**
-//     * 批量删除到回收站
-//     * @param request
-//     * @throws IOException
-//     */
-//    @RequestMapping(path = "/batchRecycle")
-//    public String batchRecycle(HttpServletRequest request){
-//        Map<String, String[]> map = request.getParameterMap();
-//        List<String> idList = Arrays.asList(map.get("fileId"));
-//        if(idList.size()>0){
-//            //标记删除到回收站
-//            fileInfoDaoImpl.batchRecycle(DateUtil.nowStrTime(),idList);
-//        }
-//        return "success";
-//    }
-
-//    /**
-//     * 单个恢复
-//     * @param request
-//     * @return
-//     */
-//    @RequestMapping(path = "/recover")
-//    public String recover(HttpServletRequest request) {
-//        String userId = ((User) request.getSession().getAttribute("user")).getUserId();
-//        //获得文件ID
-//        String fileId = request.getParameter("fileId");
-//        String fileKey=request.getParameter("fileKey");
-//        //标记删除到回收站
-//        fileInfoDaoImpl.recoverFile(fileId,userId);
-//        diskFileDaoImpl.addCateCount(fileKey);
-//        return "success";
-//    }
-
-//    /**
-//     * 批量恢复
-//     * @param request
-//     * @throws IOException
-//     */
-//    @RequestMapping(path = "/batchRecover")
-//    public String batchRecover(HttpServletRequest request) {
-//        String userId = ((User) request.getSession().getAttribute("user")).getUserId();
-//        Map<String, String[]> map = request.getParameterMap();
-//        List<String> fileIdLIst = Arrays.asList(map.get("fileId"));
-//        List<String> keyList = Arrays.asList(map.get("fileKey"));
-//        if(fileIdLIst.size()>0){
-//            fileInfoDaoImpl.recoverFile(fileIdLIst,userId);
-//            diskFileDaoImpl.batchAddCateCount(keyList);
-//        }
-//        return "success";
-//    }
-//
-//    /**
-//     * 单个删除
-//     * @param request
-//     * @return
-//     */
-//    @RequestMapping(path = "/delete")
-//    public String delete(HttpServletRequest request) {
-//        String userId = ((User) request.getSession().getAttribute("user")).getUserId();
-//        //获得文件ID
-//        String fileId = request.getParameter("fileId");
-//        String fileKey = request.getParameter("fileKey");
-//        //从数据库删除文件信息
-//        fileInfoDaoImpl.deleteFile(fileId,userId);
-//        //减少文件的引用次数
-//        diskFileDaoImpl.subtractCateCount(fileKey);
-//        return "success";
-//    }
-//
-//    /**
-//     * 批量删除
-//     * @param request
-//     * @throws IOException
-//     */
-//    @RequestMapping(path = "/batchDelete")
-//    public String batchDelete(HttpServletRequest request ,@RequestBody String json){
-//        Map<String, String[]> map = request.getParameterMap();
-//        List<String> idList = Arrays.asList(map.get("fileId"));
-//        List<String> keyList = Arrays.asList(map.get("fileKey"));
-//        if(keyList.size()>0){
-//            fileInfoDaoImpl.batchDelete(idList);
-//            diskFileDaoImpl.batchSubtractCateCount(keyList);
-//        }
-//        return "success";
-//    }
 
     /**
      * 根据条件模糊查找
@@ -414,17 +312,17 @@ public class FileController {
     }
 
     /**
-     * 重命名文件
+     * 重命名文件或文件夹
      */
     @RequestMapping(path = "/reFileName")
     public String reFileName(HttpServletRequest request){
         String isFolder = request.getParameter("isFolder");
-        String fileId = request.getParameter("fileId");
+        String id = request.getParameter("id");
         String newFileName = request.getParameter("newFileName");
         if("0".equals(isFolder)){
-            fileInfoDaoImpl.reFileName(fileId,newFileName);
+            fileInfoDaoImpl.reFileName(id,newFileName);
         }else {
-            folderInfoDao.reFolderName(fileId,newFileName);
+            folderInfoDao.reFolderName(id,newFileName);
         }
         return "success";
     }

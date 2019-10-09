@@ -1,5 +1,6 @@
 package com.services;
 
+import com.dao.FileInfoDao;
 import com.dao.FolderInfoDao;
 import com.domain.FilePrams;
 import com.domain.FolderInfo;
@@ -15,6 +16,9 @@ public class FolderInfoDaoImpl implements FolderInfoDao {
 
     @Autowired
     private FolderInfoDao folderInfoDao;
+
+    @Autowired
+    private FileInfoDao fileInfoDao;
 
     @Override
     public void creatFolder(FolderInfo folderInfo) {
@@ -49,34 +53,19 @@ public class FolderInfoDaoImpl implements FolderInfoDao {
     @Override
     public void recoverFolder(List<String> folderIdList, String folderUid) {
         folderInfoDao.recoverFolder(folderIdList,folderUid);
-    }
-
-    public void recoverFolder(String folderId, String folderUid) {
-        List<String> folderIdList=new ArrayList<>();
-        folderIdList.add(folderId);
-        recoverFolder(folderIdList,folderUid);
+        fileInfoDao.recoverFile(null,folderUid,folderIdList);
     }
 
     @Override
     public void recycleFolder(List<String> folderIdList, String folderUid) {
         folderInfoDao.recycleFolder(folderIdList,folderUid);
+        fileInfoDao.recycleFile(null,folderUid,folderIdList);
     }
 
-    public void recycleFolder(String folderId,String folderUid){
-        List<String> folderIdList=new ArrayList<>();
-        folderIdList.add(folderId);
-        recycleFolder(folderIdList,folderUid);
-    }
 
     @Override
     public void deleteFolder(List<String> folderIdList, String folderUid) {
         folderInfoDao.deleteFolder(folderIdList,folderUid);
-    }
-
-    public void deleteFolder(String folderId,String folderUid) {
-        List<String> folderIdList=new ArrayList<>();
-        folderIdList.add(folderId);
-        deleteFolder(folderIdList,folderUid);
     }
 
 }

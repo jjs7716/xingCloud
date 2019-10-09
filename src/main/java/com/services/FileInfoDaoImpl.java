@@ -3,7 +3,7 @@ package com.services;
 import com.dao.FileInfoDao;
 import com.domain.FileInfo;
 import com.domain.FilePrams;
-import com.domain.User;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,37 +47,31 @@ public class FileInfoDaoImpl implements FileInfoDao {
     }
 
     @Override
+    public void recycleFile(List<String> fileIdList,String fileUid,List<String> folderIdList) {
+        fileInfoDao.recycleFile(fileIdList,fileUid,folderIdList);
+    }
+
     public void recycleFile(List<String> fileIdList,String fileUid) {
-        fileInfoDao.recycleFile(fileIdList,fileUid);
-    }
-
-    public void recycleFile(String fileId,String fileUid) {
-        List<String> fileIdList=new ArrayList<>();
-        fileIdList.add(fileId);
-        fileInfoDao.recycleFile(fileIdList,fileUid);
+        fileInfoDao.recycleFile(fileIdList,fileUid,null);
     }
 
     @Override
+    public void recoverFile(List<String> fileIdList,String fileUid,List<String> folderIdList) {
+        fileInfoDao.recoverFile(fileIdList,fileUid,folderIdList);
+    }
+
     public void recoverFile(List<String> fileIdList,String fileUid) {
-        fileInfoDao.recoverFile(fileIdList,fileUid);
+        fileInfoDao.recoverFile(fileIdList,fileUid,null);
     }
 
-    public void recoverFile(String fileId,String fileUid){
-        List<String> fileIdList=new ArrayList<>();
-        fileIdList.add(fileId);
-        fileInfoDao.recoverFile(fileIdList,fileUid);
-    }
     @Override
+    public void deleteFile(List<String> fileIdList,String fileUid,List<String> folderIdList) {
+        fileInfoDao.deleteFile(fileIdList,fileUid,folderIdList);
+    }
+
     public void deleteFile(List<String> fileIdList,String fileUid) {
-        fileInfoDao.deleteFile(fileIdList,fileUid);
+        fileInfoDao.deleteFile(fileIdList,fileUid,null);
     }
-
-    public void deleteFile(String fileId,String fileUid){
-        List<String> fileIdList=new ArrayList<>();
-        fileIdList.add(fileId);
-        fileInfoDao.deleteFile(fileIdList,fileUid);
-    }
-
 
     @Override
     public List<FileInfo> search(String userId, String searchName) {
