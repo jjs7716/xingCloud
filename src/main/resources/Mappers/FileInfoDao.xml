@@ -29,7 +29,7 @@
 
 <!--    根据用户id查找文件名 -->
     <select id="queryFile" resultMap="fileMap">
-        select * from fileinfo where file_uid=#{userId} and file_state = 0 and parent_id=#{folderId};
+        select * from fileinfo where file_uid=#{userId} and file_state = 0 and parent_id=#{folderId}  order by update_time desc;
     </select>
 
     <!--    显示回收站文件 -->
@@ -69,7 +69,7 @@
         update fileinfo set delete_day=30-TIMESTAMPDIFF(day,update_time,delete_time) where file_state=1
     </update>
 
-    <!--    恢复文件-->
+    <!--  恢复文件-->
     <update id="recoverFile">
         update fileinfo set delete_time="${@utils.BaseUtil@DEFAULT_DELETE_TIME}",
         file_state=0,delete_day=${@utils.BaseUtil@DEFAULT_DELETE_DAY}
@@ -143,24 +143,28 @@
         select * from fileinfo where file_uid=#{userId}
         and  file_type=".video"
         and  file_state=0
+         order by update_time desc
     </select>
 
     <select id="searchByMusic" resultMap="fileMap">
         select * from fileinfo where file_uid=#{userId}
         and  file_type=".music"
         and  file_state=0
+        order by update_time desc
     </select>
 
     <select id="searchByDoc" resultMap="fileMap">
         select * from fileinfo where file_uid=#{userId}
         and  file_type=".doc"
         and  file_state=0
+         order by update_time desc
     </select>
 
     <select id="searchByImg" resultMap="fileMap">
         select * from fileinfo where file_uid=#{userId}
         and  file_type=".img"
         and  file_state=0
+         order by update_time desc
     </select>
 
     <select id="searchByOther" resultMap="fileMap">

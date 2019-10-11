@@ -18,7 +18,7 @@ public class Transfer {
     public String transfer(HttpServletRequest request){
         String transfer = request.getParameter("transfer");
         //跳转到添加页面
-        if("add".equals(transfer)){
+        if("upload".equals(transfer)){
             return "handle/upload";
         }
         if("setting".equals(transfer)){

@@ -6,6 +6,7 @@ import com.domain.User;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface FolderInfoDao {
 
@@ -70,4 +71,11 @@ public interface FolderInfoDao {
      * @param folderUid         文件夹所属的用户ID
      */
     void deleteFolder(@Param("folderIdList") List<String> folderIdList,@Param("folderUid") String folderUid);
+
+    /**
+     * 查找父文件夹
+     * @param filePrams
+     * @return
+     */
+    FolderInfo queryParent(FilePrams filePrams);
 }

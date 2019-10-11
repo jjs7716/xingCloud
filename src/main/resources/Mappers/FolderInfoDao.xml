@@ -13,14 +13,16 @@
         <result property="updateTime" column="update_time"></result>
         <result property="parentId" column="parent_id"></result>
         <result property="parentName" column="parent_name"></result>
+        <result property="fileNum" column="file_num"></result>
+        <result property="folderNum" column="folder_num"></result>
         <result property="deleteTime" column="delete_time"></result>
         <result property="deleteDay" column="delete_day"></result>
         <result property="folderState" column="folder_state"></result>
     </resultMap>
 <!--插入文件信息-->
     <insert id="creatFolder">
-        insert into folderinfo (folder_id, folder_name, folder_uid, update_time, parent_id ,parent_name, delete_day, folder_state)
-        values(#{folderId},#{folderName},#{folderUid},#{updateTime},#{parentId},#{parentName},#{deleteDay},#{folderState})
+        insert into folderinfo (folder_id, folder_name, folder_uid, update_time, parent_id ,parent_name, file_num,folder_num, delete_day, folder_state)
+        values(#{folderId},#{folderName},#{folderUid},#{updateTime},#{parentId},#{parentName},#{fileNum},{folderNum},#{deleteDay},#{folderState})
     </insert>
 <!--彻底删除-->
     <delete id="deleteFolder">
@@ -31,17 +33,30 @@
     </delete>
 <!--查找正常的文件夹-->
     <select id="queryFolder" resultMap="folderMap">
-        select * from folderinfo where folder_uid=#{userId} and folder_state = 0 and parent_id=#{folderId};
+        select * from folderinfo where folder_uid=#{userId} and folder_state = 0
+        <choose>
+            <when test="folderId != null">
+                and parent_id=#{folderId}
+            </when>
+            <otherwise>
+                and parent_id=""
+            </otherwise>
+        </choose>
+          order by folder_name;
+    </select>
+<!--查找父文件夹-->
+    <select id="queryParent" resultMap="folderMap">
+        select folder_id,folder_name,parent_id,parent_name from folderinfo where folder_uid=#{userId} and folder_id=#{folderId} and folder_state = 0
     </select>
 <!--查找回收站的文件夹-->
     <select id="queryFolderByRecycle" resultMap="folderMap">
         select * from folderinfo where folder_uid=#{userId} and folder_state = 1 and parent_id="";
     </select>
-<!--重命名文件夹-->
+<!--重命名文件-->
     <update id="reFolderName">
         update folderinfo set folder_name=#{newFolderName} where folder_id=#{folderId}
     </update>
-<!--移动文件夹-->
+<!--移动文件-->
     <update id="moveToFolder">
         update fileinfo set parent_id=#{folderId} where file_id in
         <foreach item="fileId" index="index" collection="fileIdList" open="(" separator="," close=")">

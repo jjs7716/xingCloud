@@ -7,32 +7,9 @@
     <script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script async="false" src="static/js/creatFile.js"></script>
+    <script src="static/layer/layer.js"></script>
+    <script src="static/js/bootstrap-treeview.js"></script>
     <script>
-        function batchDownFile() {
-            var checkId=document.getElementsByName("fileId");
-            for(var i=0;i<checkId.length;i++){
-                document.getElementById("key"+i).checked=document.getElementById("id"+i).checked
-            }
-            document.forms.namedItem("mainId").action="file/downloads";
-            document.forms.namedItem("mainId").submit();
-        }
-
-        // function batchRecycleFile() {
-        //     getList();
-        //     var json={"control":"recycle","fileIdList":fileIdList,"folderIdList":folderIdList};
-        //     $.ajax({
-        //         url: pathUrl + "/recycle/controller",
-        //         contentType: 'application/json; charset=UTF-8',
-        //         dataType: "json",
-        //         data:JSON.stringify(json),
-        //         type: "post",
-        //         success: function (result) {
-        //             console.log("批量删除执行成功！");
-        //                 main();
-        //         }
-        //     });
-        // }
-
         $(document).ready(function() {
             // 根据网址激活导航条
             var url = window.location;
@@ -68,21 +45,23 @@
             left: 11%;
             width: 89%;
             top: 50%;
+            height: 50px;
         }
         #titleForm{
-            position:relative;
-            left: 30%;
-           width: 30%;
+            /*position:relative;*/
+           /* left: 30%;*/
+           /*width: 30%;*/
         }
         #left{
             position:absolute;
             width: 9%;
         }
         #main{
-            position: absolute;
-            width: 89%;
-            left: 10%;
-            top: 10%;
+            margin-left: 10%;
+        }
+        #dir{
+            margin-top: 20px;
+            font-size: 15px;
         }
     </style>
 </head>
@@ -96,21 +75,39 @@
         <li role="presentation"><a href="file/search?type=music" id="music">音乐</a></li>
         <li role="presentation"><a href="file/search?type=doc" id="doc">文档</a></li>
         <li role="presentation"><a href="file/search?type=img" id="img">图片</a></li>
+        <form class="navbar-form " role="search" id="titleForm" action="file/search">
+            <div class="form-group">
+                <input type="text" class="form-control" name="search" id="search" value="" placeholder="搜索你的文件">
+            </div>
+            <button type="submit" class="btn btn-default" id="doSearch">查找</button>
+        </form>
     </ul>
-    <form class="navbar-form " role="search" id="titleForm" action="file/search">
-        <div class="form-group">
-            <input type="text" class="form-control" name="search" id="search" value="" placeholder="搜索你的文件">
-        </div>
-        <button type="submit" class="btn btn-default" id="doSearch">查找</button>
-    </form>
 </div>
-    <div id="left" class="btn-group-vertical btn-group-lg" role="group" aria-label="...">
-        <button type="button" class="btn btn-default" onclick="location='transfer?transfer=main'">我的文件</button>
-        <button type="button" class="btn btn-default" onclick="">我的好友</button>
-        <button type="button" class="btn btn-default" onclick="">我的分享</button>
-        <button type="button" class="btn btn-default" onclick="location='transfer?transfer=recycle'">回收站</button>
+<div id="left" class="btn-group-vertical btn-group-lg" role="group" aria-label="...">
+    <button type="button" class="btn btn-default" onclick="location='transfer?transfer=main'">我的文件</button>
+    <button type="button" class="btn btn-default" onclick="">我的好友</button>
+    <button type="button" class="btn btn-default" onclick="">我的分享</button>
+    <button type="button" class="btn btn-default" onclick="location='transfer?transfer=recycle'">回收站</button>
+</div>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">请选择目标文件夹</h4>
+            </div>
+            <div class="modal-body">
+                你好
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div>
     </div>
+</div>
 <div id="main">
+    <div id="dir"><a href='javascript:void(0);' onclick=folder("")>返回上一级</a></div>
     <form id="mainId">
     <table class="table table-hover">
         <thead>
@@ -119,9 +116,9 @@
         <th width="10%">文件大小</th>
         <th width="20%">上传时间</th>
         <th >
-            <input  class="btn btn-success" type="button" onclick='location="/file/transfer?transfer=main"' value="上传文件">
+            <input  class="btn btn-success" type="button" onclick='location="transfer?transfer=upload"' value="上传文件">
             <input class="btn btn-info" type="button" onclick="creatFolder()" value="新建文件夹">
-            <input class="btn btn-primary" type="button" onclick="downFile()" value="批量下载">
+            <input class="btn btn-primary" type="button" onclick="batchDownFile()" value="批量下载">
             <input class="btn btn-danger" type="button"onclick="batch('recycle')" value="批量删除"></th>
         </thead>
         <tbody id="tbody">
@@ -136,6 +133,7 @@
     var pathUrl = encodeURI(window.location.protocol+"//"+ window.location.host+"/"+secondLevelLocation);
     var username=$.cookie("cookieUsername");
     var userId=$.cookie("cookieUserId");
+    var selectFolderList;
     $(document).ready(function () {
         $("#nickname").text(username);
         main();
@@ -169,16 +167,16 @@
                 "                    <input type=\"checkbox\" id=\"folderId"+i+"\" name=\"folderId\" value=\""+folder.folderId+"\">\n" +
                 // "                    <input type=\"checkbox\" id=\"key"+folder.folderId+"\" name=\"fileKey\" hidden>\n" +
                 "                </td>\n" +
-                "                <td id=\"name"+folder.folderId+"\"><a name='entryFolder' href='#'>"+folder.folderName+"</a></td>\n" +
+                "                <td id=\"name"+folder.folderId+"\"><a name='entryFolder' href='javascript:void(0);' onclick='folder(&quot;"+folder.folderId+"&quot;)'>"+folder.folderName+"</a></td>\n" +
                 "                <td>-</td>\n" +
                 "                <td>"+timeFormat(folder.updateTime,0)+"</td>\n" +
                 "                <td >\n" +
-                "                    <input class=\"btn btn-success\" type=\"button\" onclick=\"downFolder("+i+")\" value=\"下载\">\n" +
+                "                    <input class=\"btn btn-success\" type=\"button\" onclick=\"downFolder(&quot;"+folder.folderId+"&quot;)\" value=\"下载\">\n" +
                 "                    <input class=\"btn btn-danger\" type=\"button\"  onclick=\"recycleFolder("+i+")\"  value=\"删除\">\n" +
                 "                    <div class=\"btn-group\"><button type=\"button\" class=\"btn btn-primary dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">更多<span class=\"caret\"></span></button>\n" +
                 "                        <ul class=\"dropdown-menu\">\n" +
                 "                            <li><a href=\"#\" onclick=\"reName(&quot;"+folder.folderId+"&quot;,&quot;"+folder.isFolder+"&quot;)\" >重命名</a></li>\n" +
-                "                            <li><a href=\"#\">移动</a></li>\n" +
+                "                            <li><a href='javascript:void(0);' onclick='selectFolder()'>移动</a></li>\n" +
                 "                            <li><a href=\"#\">复制</a></li>\n" +
                 "                            <li><a href=\"#\" onclick=\"recycleFolder("+i+")\">删除</a></li>\n" +
                 "                        </ul>\n" +
@@ -200,12 +198,12 @@
                 "            <td>"+file.strFileSize+"</td>\n" +
                 "            <td>"+timeFormat(file.updateTime,0)+"</td>\n" +
                 "            <td >\n" +
-                "                <input class=\"btn btn-success\" type=\"button\" onclick=\"downFile("+i+")\" value=\"下载\">\n" +
+                "                <input class=\"btn btn-success\" type=\"button\" onclick=\"downFile(&quot;"+file.fileId+"&quot;)\" value=\"下载\">\n" +
                 "                <input class=\"btn btn-danger\" type=\"button\" onclick=\"recycleFile("+i+")\" value=\"删除\">\n" +
                 "                <div class=\"btn-group\"><button type=\"button\" class=\"btn btn-primary dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">更多<span class=\"caret\"></span></button>\n" +
                 "                <ul class=\"dropdown-menu\">\n" +
                 "                    <li><a href=\"#\" id=\"reName"+i+"\" onclick='reName(\""+file.fileId+"\",\""+file.isFolder+"\")'>重命名</a></li>\n" +
-                "                    <li><a href=\"#\">移动</a></li>\n" +
+                "                    <li><a href='javascript:void(0);' onclick='selectFolder()'>移动</a></li>\n" +
                 "                    <li><a href=\"#\">复制</a></li>\n" +
                 "                    <li><a href=\"#\" onclick=\"recycleFile("+i+")\">删除</a></li>\n" +
                 "                </ul>\n" +
@@ -223,20 +221,19 @@
 
     //下载文件夹
     function downFolder(folderId) {
-        $.get(pathUrl+"/file/download?folderId"+folderId,
-            function (result) {
-                console.log(result)
-            }
-        )
+        window.location=pathUrl+"/file/download?folderId="+folderId;
     }
 
     //下载文件
     function downFile(fileId) {
-        $.get(pathUrl+"/file/download?fileId="+fileId,
-            function (result) {
-                console.log(result)
-            }
-        )
+        window.location=pathUrl+"/file/download?fileId="+fileId;
+    }
+
+    //批量下载
+    function batchDownFile() {
+        getList();
+        document.forms.namedItem("mainId").action="file/downloads";
+        document.forms.namedItem("mainId").submit();
     }
 
     //删除文件夹到回收站
@@ -274,8 +271,6 @@
 
     //确认重命名
     function confirmReName(id,isFolder) {
-        // let fileId=$("#"+"id"+id).val();
-        let nameId="name"+id;
         let newId="newName"+id;
         let newFileName=$("#"+newId).val();
         if(isFolder==1){
@@ -301,8 +296,6 @@
             "newFileName":newFileName
         },
             function(data,status){
-                // console.log("Data: " + data + "\nStatus: " + status);
-                // $("#"+nameId).children("a").text(newFileName);
                 main();
         })
     }
@@ -330,7 +323,7 @@
             "            <td>\n" +
             "                <input type=\"checkbox\"  value="+folderId+" >\n" +
             "            </td>\n" +
-            "            <td id=\"folderName"+folderId+"\"><a name='entryFolder' href='#'></a></td>\n" +
+            "            <td id=\"folderName"+folderId+"\"><a name='entryFolder' href='javascript:void(0);' onclick='folder(&quot;"+folder.folderId+"&quot;)'></a></td>\n" +
             "            <td>-</td>\n" +
             "            <td id=\"time"+folderId+"\"></td>\n" +
             "            <td >\n" +
@@ -339,7 +332,7 @@
             "                <div class=\"btn-group\"><button type=\"button\" class=\"btn btn-primary dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">更多<span class=\"caret\"></span></button>\n" +
             "                <ul class=\"dropdown-menu\">\n" +
             "                    <li><a href=\"#\" id=\"reFolderName"+folderId+"\" onclick=\"reFolderName(&quot;"+folderId+"&quot;)\" >重命名</a></li>\n" +
-            "                    <li><a href=\"#\">移动</a></li>\n" +
+            "                    <li><a href='javascript:void(0);' onclick='selectFolder()'>移动</a></li>\n" +
             "                    <li><a href=\"#\">复制</a></li>\n" +
             "                </ul>\n" +
             "                </div>\n" +
@@ -382,20 +375,31 @@
         $("#"+nameId).remove();
         label=0;
     }
+
     //进入文件夹
     function folder(folderId) {
-        $.ajax({
-            url:pathUrl+"/folder/folder",
-            data:folderId,
-            type:"get",
-            success:function(result){
-                if(result.status==true){
-                    creatMainList(result.data.folderList,result.data.fileList);
+        let backFolder;
+        $.post(pathUrl+"/folder/folder",
+            {
+                "folderId":folderId
+            },
+            function(result){
+                creatMainList(result.data.folderList,result.data.fileList);
+                let nameList=result.data.nameList;
+                let idList=result.data.idList;
+                let idLength=idList.length;
+                if(idLength>=2){
+                    backFolder=idList[idLength-2];
                 }else{
-                    $("#error").text(result.msg);
+                    backFolder="";
                 }
-            }
-        });
+                $("#dir").text("");
+                $("#dir").append("<a href='javascript:void(0);' onclick='folder(&quot;"+backFolder+"&quot;)'>返回上一层</a>|");
+                for (let i = 0; i < idLength; i++) {
+                    $("#dir").append("<a href='javascript:void(0);' onclick='folder(&quot;"+idList[i]+"&quot;)'>"+nameList[i]+"</a>/");
+                }
+
+            });
     }
 
     //格式化时间
@@ -414,5 +418,47 @@
             return "_"+year + month + date+"_"+hour+minute+second;
         }
     }
+
+
+    //
+    // //移动或复制选择文件夹
+    // function selectFolder() {
+    //     $.post(
+    //         pathUrl+"/folder/folder",
+    //         {
+    //             "folderId":""
+    //         },
+    //         function(result){
+    //             let folderList=result.data.folderList;
+    //             let nameList=[];
+    //             let idList=[];
+    //             for (let i = 0; i < folderList.length; i++) {
+    //                 nameList.push(folderList[i].folderName);
+    //                 idList.push(folderList[i].folderId);
+    //             }
+    //             let folderNumList=getFolderNum(idList);
+    //
+    //             // selectFolderList=result.data;
+    //             // $('#myModal').modal();
+    //             // console.log(JSON.stringify(selectFolderList))
+    //         });
+    // }
+    // function getFolderNum(idList) {
+    //     let list=[];
+    //     for (let i = 0; i < idList.length; i++) {
+    //         $.post(
+    //             pathUrl+"/folder/folder",
+    //             {
+    //                 "folderId":idList[i]
+    //             },
+    //             function(result){
+    //                 let folderList=result.data.folderList;
+    //                 list.push(folderList.length);
+    //             });
+    //     }
+    //     return list;
+    // }
+
+
 </script>
 </html>

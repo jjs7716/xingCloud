@@ -14,11 +14,10 @@ import org.w3c.dom.html.HTMLParagraphElement;
 import utils.DateUtil;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.swing.text.html.parser.Entity;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping(path="/folder")
@@ -38,7 +37,6 @@ public class FolderController {
      * @return
      */
     @RequestMapping("/creatFolder")
-    @ResponseBody
     public String creatFolder(HttpServletRequest request){
         FolderInfo folderInfo=new FolderInfo();
         String folderId = request.getParameter("folderId");
@@ -57,7 +55,6 @@ public class FolderController {
      * 重命名文件夹
      */
     @RequestMapping(path = "/reFolderName")
-    @ResponseBody
     public String reFolderName(HttpServletRequest request){
         String folderId = request.getParameter("folderId");
         String newFolderName = request.getParameter("newFolderName");
@@ -79,9 +76,67 @@ public class FolderController {
         FilePrams filePrams=new FilePrams(userId,folderId);
         List<FileInfo> fileList = fileInfoDao.queryFile(filePrams);
         List<FolderInfo> folderList=folderInfoDao.queryFolder(filePrams);
+        List<String> nameList=new ArrayList<>();
+        List<String> idList=new ArrayList<>();
+        getParent(filePrams,nameList,idList);
         data.put("fileList",fileList);
         data.put("folderList",folderList);
+        data.put("nameList",nameList);
+        data.put("idList",idList);
+        dataResult.setData(data);
         return dataResult;
+    }
+
+    /**
+     * 获取当前文件夹的全路径
+     * @param filePrams
+     * @param nameList
+     * @param idList
+     */
+    private void getParent(FilePrams filePrams,List<String> nameList,List<String> idList){
+        FolderInfo folderInfo = folderInfoDao.queryParent(filePrams);
+        if(folderInfo!=null){
+            filePrams.setFolderId(folderInfo.getParentId());
+            nameList.add(folderInfo.getFolderName());
+            idList.add(folderInfo.getFolderId());
+            getParent(filePrams,nameList,idList);
+        }else {
+            Collections.reverse(nameList);
+            Collections.reverse(idList);
+        }
+    }
+
+    /**
+     * 获取文件夹目录树
+     * @param request
+     * @return
+     */
+    @RequestMapping("selectFolder")
+    public DataResult selectFolder(HttpServletRequest request){
+        DataResult dataResult=new DataResult();
+        Map<String,Object> data=new HashMap<>();
+        FilePrams filePrams=new FilePrams();
+        filePrams.setUserId(((User)request.getSession().getAttribute("user")).getUserId());
+        getFolder(filePrams,data);
+        dataResult.setData(data);
+        return dataResult;
+    }
+
+    /**
+     * 递归获取目录树
+     * @param filePrams
+     * @param frontMap
+     */
+    private void getFolder(FilePrams filePrams,Map<String,Object> frontMap){
+        List<FolderInfo> FolderInfoList=folderInfoDao.queryFolder(filePrams);
+        if(FolderInfoList.size()>0){
+            for (int i = 0; i < FolderInfoList.size(); i++) {
+                Map<String,Object> map=new HashMap<>();
+                filePrams.setFolderId(FolderInfoList.get(i).getFolderId());
+                frontMap.put(FolderInfoList.get(i).getFolderName(),map);
+                getFolder(filePrams,map);
+            }
+        }
     }
 
 //    /**

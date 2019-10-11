@@ -25,8 +25,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.xml.crypto.Data;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -49,13 +47,13 @@ public class FileController {
 
 
     @Autowired
-    private FileInfoDaoImpl fileInfoDaoImpl;
+    private FileInfoDaoImpl fileInfoDao;
 
     @Autowired
     private Format format;
 
     @Autowired
-    private DiskFileDaoImpl diskFileDaoImpl;
+    private DiskFileDaoImpl diskFileDao;
 
     @Autowired
     private FolderInfoDaoImpl folderInfoDao;
@@ -76,7 +74,7 @@ public class FileController {
             dataResult.setStatus(false);
             return dataResult;
         }
-        List<FileInfo> fileList = fileInfoDaoImpl.queryFile(filePrams);
+        List<FileInfo> fileList = fileInfoDao.queryFile(filePrams);
         List<FolderInfo> folderList=folderInfoDao.queryFolder(filePrams);
         Map<String,Object> data=new HashMap<>();
         data.put("fileList",fileList);
@@ -138,23 +136,23 @@ public class FileController {
             //上传文件,以后用md5来标记文件,以后用来减少重复
             try {
                 //根据md5判断服务器上是否有重复的文件
-                if(diskFileDaoImpl.queryCateCount(fileKey)==null){
+                if(diskFileDao.queryCateCount(fileKey)==null){
                     value.transferTo(new File(path,fileKey));
                     //第一次上传,保存上传信息
                     diskFile.setFileKey(fileKey);
                     diskFile.setUpdateUid(userId);
                     diskFile.setUpdateTime(nowDate);
                     //插入文件引用信息
-                    diskFileDaoImpl.insertFileInfo(diskFile);
+                    diskFileDao.insertFileInfo(diskFile);
                 }else{
                     //有重复文件,就不上传,只加引用次数
-                    diskFileDaoImpl.addCateCount(fileKey);
+                    diskFileDao.addCateCount(fileKey);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
             //将文件信息插入数据库
-            fileInfoDaoImpl.insertInfo(fileType(fileInfo));
+            fileInfoDao.insertInfo(fileType(fileInfo));
             request.getSession().setAttribute(key,"成功上传!");
         }
         return "main";
@@ -167,16 +165,44 @@ public class FileController {
      * @throws IOException
      */
     @RequestMapping(path = "/download")
-    public String downLoadFile(HttpServletRequest request,HttpServletResponse response) throws IOException {
+    public void download(HttpServletRequest request,HttpServletResponse response) throws IOException {
         String fileId = request.getParameter("fileId");
-        List<FileInfo> byId = fileInfoDaoImpl.queryById(fileId);
+        String folderId=request.getParameter("folderId");
+        if(fileId != null){
+            downloadFile(fileId,request,response);
+        }
+        if(folderId != null){
+            downloadFolder(folderId,request,response);
+        }
+    }
+
+    private void downloadFile(String fileId,HttpServletRequest request,HttpServletResponse response) throws IOException {
+        List<FileInfo> byId = fileInfoDao.queryById(fileId);
         String fileName= byId.get(0).getFileName();
         String fileKey=byId.get(0).getFileKey();
         //调用下载方法
         down(fileKey,fileName,request,response);
-        return "main";
     }
 
+    private void downloadFolder(String folderId,HttpServletRequest request,HttpServletResponse response) throws IOException {
+        String userId = ((User) request.getSession().getAttribute("user")).getUserId();
+        FilePrams filePrams=new FilePrams();
+        filePrams.setFolderId(folderId);
+        filePrams.setUserId(userId);
+        List<FileInfo> fileInfos = fileInfoDao.queryFile(filePrams);
+        if(fileInfos.size()>0){
+            //压缩文件名
+            String zipName=fileInfos.get(0).getParentName();
+            //压缩后文件的真实路径
+            String pathName=BaseUtil.getFolder();
+            //压缩文件
+            XingUtils.createZipFile(fileInfos,pathName,zipName);
+            //下载压缩后的文件
+            down(zipName,request,response);
+            //删除压缩后的文件
+            new File(pathName+zipName).delete();
+        }
+    }
     /**
      * 批量下载
      * @param request
@@ -184,19 +210,17 @@ public class FileController {
      * @throws IOException
      */
     @RequestMapping(path = "/downloads")
-    public void downLoadFiles(HttpServletRequest request, HttpServletResponse response, @RequestBody String json) throws IOException {
-        DataResult dataResult=new DataResult();
+    public void downLoadFiles(HttpServletRequest request, HttpServletResponse response) throws IOException {
         //获取选中的ID封装为Map
         Map<String, String[]> map = request.getParameterMap();
         //将Map转换为List集合
-        List<String> idList = XingUtils.ValueToList(map);
+        List<String> idList = new ArrayList<>(Arrays.asList(map.get("fileId")));
         //根据fileId查找文件名,并返回集合 注:不是真实路径
-        List<FileInfo> fileList=fileInfoDaoImpl.queryById(idList);
+        List<FileInfo> fileList=fileInfoDao.queryById(idList);
         //判断如果是一个文件,就不压缩,直接下载
         if(fileList.size()==1){
             down(fileList.get(0).getFileKey(),request,response);
             return;
-//            return "main";
         }
         //压缩文件名
         String zipName=fileList.get(0).getFileName().substring(0,fileList.get(0).getFileName().length()-4)+"等多个文件.zip";
@@ -277,21 +301,21 @@ public class FileController {
         search=(search==null)?"":search;
         List<FileInfo> fileList;
         if(type==null){
-            fileList=fileInfoDaoImpl.search(userId,search);
+            fileList=fileInfoDao.search(userId,search);
             data.put("fileList",fileList);
             return main(request);
         }else{
             type="."+type;
             if(video.equals(type)){
-                fileList=fileInfoDaoImpl.searchByVideo(userId);
+                fileList=fileInfoDao.searchByVideo(userId);
             }else if(music.equals(type)) {
-                fileList=fileInfoDaoImpl.searchByMusic(userId);
+                fileList=fileInfoDao.searchByMusic(userId);
             }else if(doc.equals(type)){
-                fileList=fileInfoDaoImpl.searchByDoc(userId);
+                fileList=fileInfoDao.searchByDoc(userId);
             }else if(img.equals(type)){
-                fileList=fileInfoDaoImpl.searchByImg(userId);
+                fileList=fileInfoDao.searchByImg(userId);
             }else {
-                fileList=fileInfoDaoImpl.searchByOther(userId);
+                fileList=fileInfoDao.searchByOther(userId);
             }
             data.put("fileList",fileList);
             DataResult dataResult=main(request);
@@ -320,7 +344,7 @@ public class FileController {
         String id = request.getParameter("id");
         String newFileName = request.getParameter("newFileName");
         if("0".equals(isFolder)){
-            fileInfoDaoImpl.reFileName(id,newFileName);
+            fileInfoDao.reFileName(id,newFileName);
         }else {
             folderInfoDao.reFolderName(id,newFileName);
         }

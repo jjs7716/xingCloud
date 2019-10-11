@@ -12,6 +12,8 @@ public class FolderInfo {
     private Date updateTime;
     private String parentId="";
     private String parentName="";
+    private int fileNum;
+    private int folderNum;
     private Date deleteTime;
     private int deleteDay=-1;
     private int folderState=0;
@@ -95,5 +97,21 @@ public class FolderInfo {
 
     public void setFolderState(int folderState) {
         this.folderState = folderState;
+    }
+
+    public int getFileNum() {
+        return fileNum;
+    }
+
+    public void setFileNum(int fileNum) {
+        this.fileNum = fileNum;
+    }
+
+    public int getFolderNum() {
+        return folderNum;
+    }
+
+    public void setFolderNum(int folderNum) {
+        this.folderNum = folderNum;
     }
 }
