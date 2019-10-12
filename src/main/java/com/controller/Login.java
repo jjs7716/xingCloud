@@ -1,17 +1,13 @@
 package com.controller;
 
-import com.dao.FileInfoDao;
-import com.dao.UserDao;
+
 import com.domain.*;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.services.FileInfoDaoImpl;
 import com.services.FolderInfoDaoImpl;
 import com.services.UserDaoImpl;
-import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,12 +18,9 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.xml.crypto.Data;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.*;
 
@@ -39,10 +32,10 @@ public class Login {
 
 
     @Autowired
-    private FileInfoDaoImpl fileInfoDaoImpl;
+    private FileInfoDaoImpl fileInfoDao;
 
     @Autowired
-    private UserDaoImpl userDaoImpl;
+    private UserDaoImpl userDao;
 
     @Autowired
     private FolderInfoDaoImpl folderInfoDao;
@@ -69,7 +62,7 @@ public class Login {
         User user = (User) session.getAttribute("user");
         FilePrams filePrams=new FilePrams(user.getUserId(),"");
         //获取用户在回收站的所有文件
-        List<FileInfo> fileList = fileInfoDaoImpl.queryFileByRecycle(filePrams);
+        List<FileInfo> fileList = fileInfoDao.queryFileByRecycle(filePrams);
         List<FolderInfo> folderList=folderInfoDao.queryFolderByRecycle(filePrams);
         data.put("fileList",fileList);
         data.put("folderList",folderList);
@@ -104,7 +97,7 @@ public class Login {
             dataResult.setMsg(error1);
             return dataResult;
         }
-        List<User> users = userDaoImpl.checkUser(user);
+        List<User> users = userDao.checkUser(user);
         if(users.size()==0){
             //用户名或密码错误，返回错误信息
             dataResult.setStatus(FAILURE);
@@ -120,7 +113,7 @@ public class Login {
             dataResult.setStatus(SUCCESS);
             dataResult.setData(data);
             //更新登录时间
-            userDaoImpl.updateLastLoginTime(user);
+            userDao.updateLastLoginTime(user);
             request.getSession().setAttribute("user",user);
             return dataResult;
         }
@@ -138,7 +131,7 @@ public class Login {
         User user = mapper.readValue(json, User.class);
         String username = user.getUsername();
         //检查username是否存在
-        List<User> cUser = userDaoImpl.checkUsername(username);
+        List<User> cUser = userDao.checkUsername(username);
         if (cUser.size() <=0) {
             dataResult.setStatus(SUCCESS);
             dataResult.setMsg("用户名可用！");
@@ -155,9 +148,9 @@ public class Login {
      * @param request
      * @return
      */
-    @RequestMapping(path = "/register")
+    @RequestMapping(path = "/regist")
     public String regist(HttpServletRequest request,User user){
-        userDaoImpl.insert(user);
+        userDao.insert(user);
         request.getSession().setAttribute("user",user);
         return "redirect:/main";
     }
@@ -187,7 +180,7 @@ public class Login {
         String newPassword = request.getParameter("newPassword");
         if(password.equals(oldPassword)){
             user.setPassword(newPassword);
-            userDaoImpl.updatePassword(user);
+            userDao.updatePassword(user);
             response.getWriter().write("true");
         }
         else{

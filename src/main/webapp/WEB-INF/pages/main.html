@@ -7,8 +7,8 @@
     <script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script async="false" src="static/js/creatFile.js"></script>
-    <script src="static/layer/layer.js"></script>
-    <script src="static/js/bootstrap-treeview.js"></script>
+    <script src="static/js/bootstrap-treeview.min.js"></script>
+    <script src="static/css/bootstrap-treeview.min.css"></script>
     <script>
         $(document).ready(function() {
             // 根据网址激活导航条
@@ -97,7 +97,7 @@
                 <h4 class="modal-title" id="myModalLabel">请选择目标文件夹</h4>
             </div>
             <div class="modal-body">
-                你好
+                <div id="tree"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary">确定</button>
@@ -418,47 +418,55 @@
             return "_"+year + month + date+"_"+hour+minute+second;
         }
     }
+    var dirFolder=[];
+    //移动或复制选择文件夹
+    function selectFolder(folderId) {
+        if(folderId==null){
+            folderId="";
+        }
+        $.ajaxSettings.async = false;
+        $.post(
+            pathUrl+"/folder/folder",
+            {
+                "folderId":folderId,
+                "selectFolder":"yes"
+            },
+            function(result){
+                let folderList=result.data.folderList;
+                for (let i in folderList) {
+                    dirFolder.push({text:folderList[i].folderName,id:folderList[i].folderId})
+                }
+                console.log(JSON.stringify(dirFolder));
+                $('#myModal').modal();
 
-
-    //
-    // //移动或复制选择文件夹
-    // function selectFolder() {
-    //     $.post(
-    //         pathUrl+"/folder/folder",
-    //         {
-    //             "folderId":""
-    //         },
-    //         function(result){
-    //             let folderList=result.data.folderList;
-    //             let nameList=[];
-    //             let idList=[];
-    //             for (let i = 0; i < folderList.length; i++) {
-    //                 nameList.push(folderList[i].folderName);
-    //                 idList.push(folderList[i].folderId);
-    //             }
-    //             let folderNumList=getFolderNum(idList);
-    //
-    //             // selectFolderList=result.data;
-    //             // $('#myModal').modal();
-    //             // console.log(JSON.stringify(selectFolderList))
-    //         });
-    // }
-    // function getFolderNum(idList) {
-    //     let list=[];
-    //     for (let i = 0; i < idList.length; i++) {
-    //         $.post(
-    //             pathUrl+"/folder/folder",
-    //             {
-    //                 "folderId":idList[i]
-    //             },
-    //             function(result){
-    //                 let folderList=result.data.folderList;
-    //                 list.push(folderList.length);
-    //             });
-    //     }
-    //     return list;
-    // }
-
+            });
+        $.ajaxSettings.async = true;
+    }
+    function getTree() {
+        // var data = [{
+        //     text: "p1", id: '00001', nodes: [{
+        //         text: "p1-1", id: '00001' }, {
+        //         text: "p1-2", id: '00002' }, {
+        //         text: "p1-3", id: '00003', nodes: [{
+        //             text: 'p1-3-1', id: '00006'}]}, {
+        //         text: "p1-4", id: '00004', nodes: [{
+        //             text: 'p1-4-1', id: '00005'}]}
+        //     ]
+        // }];
+        var data = [
+            {text: "新建文件夹1", id: 'f4b9ec30ad9f68f89b29639786cb62ef'},
+            {text: "新建文件夹2", id: '9778d5d219c5080b9a6a17bef029331c'}
+        ];
+        console.log("getTree:"+JSON.stringify(data));
+        return data;
+    }
+    $('#tree').treeview({
+        data: getTree(),
+        levels: 2,
+    });
+    $('#tree').on('nodeExpanded',function(event, data) {
+        console.log(data.id);
+    });
 
 </script>
 </html>

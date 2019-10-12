@@ -70,21 +70,46 @@ public class FolderController {
     @RequestMapping(path = "/folder")
     public DataResult folder(HttpServletRequest request){
         DataResult dataResult=new DataResult();
-        Map<String,Object> data=new HashMap<>();
         String userId= ((User) request.getSession().getAttribute("user")).getUserId();
         String folderId = request.getParameter("folderId");
+        String selectFolder=request.getParameter("selectFolder");
         FilePrams filePrams=new FilePrams(userId,folderId);
+        Map<String,Object> data=new HashMap<>();
+        Map<String,FolderInfo> folderMap;
         List<FileInfo> fileList = fileInfoDao.queryFile(filePrams);
         List<FolderInfo> folderList=folderInfoDao.queryFolder(filePrams);
-        List<String> nameList=new ArrayList<>();
-        List<String> idList=new ArrayList<>();
-        getParent(filePrams,nameList,idList);
+        //判断是否为移动或复制文件遍历目录树
+        if(selectFolder!=null){
+            folderMap=queryFolder(filePrams,folderList);
+            data.put("folderMap",folderMap);
+        }else{
+            List<String> nameList=new ArrayList<>();
+            List<String> idList=new ArrayList<>();
+            getParent(filePrams,nameList,idList);
+            data.put("nameList",nameList);
+            data.put("idList",idList);
+        }
         data.put("fileList",fileList);
         data.put("folderList",folderList);
-        data.put("nameList",nameList);
-        data.put("idList",idList);
         dataResult.setData(data);
         return dataResult;
+    }
+
+    /**
+     * 遍历子文件夹是否为空
+     * @param filePrams
+     * @param folderList
+     */
+    private Map<String,FolderInfo> queryFolder(FilePrams filePrams,List<FolderInfo> folderList){
+        Map<String,FolderInfo> folderMap=new HashMap<>();
+        for (FolderInfo folderInfo : folderList) {
+            filePrams.setFolderId(folderInfo.getFolderId());
+            if(folderInfoDao.queryFolder(filePrams)!=null){
+                folderInfo.setFolderEmpty(0);
+            }
+            folderMap.put(folderInfo.getFolderId(),folderInfo);
+        }
+        return folderMap;
     }
 
     /**
@@ -107,7 +132,7 @@ public class FolderController {
     }
 
     /**
-     * 获取文件夹目录树
+     * 获取指定文件夹目录树
      * @param request
      * @return
      */
@@ -123,7 +148,7 @@ public class FolderController {
     }
 
     /**
-     * 递归获取目录树
+     * 递归获取全部目录树
      * @param filePrams
      * @param frontMap
      */

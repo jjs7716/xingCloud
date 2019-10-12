@@ -12,8 +12,8 @@ public class FolderInfo {
     private Date updateTime;
     private String parentId="";
     private String parentName="";
-    private int fileNum;
-    private int folderNum;
+    private int folderEmpty=1;      //0为有子文件夹   1为没有子文件夹
+    private int isEmpty=1;          //0是不为空      1是为空文件夹
     private Date deleteTime;
     private int deleteDay=-1;
     private int folderState=0;
@@ -99,19 +99,19 @@ public class FolderInfo {
         this.folderState = folderState;
     }
 
-    public int getFileNum() {
-        return fileNum;
+    public int getFolderEmpty() {
+        return folderEmpty;
     }
 
-    public void setFileNum(int fileNum) {
-        this.fileNum = fileNum;
+    public void setFolderEmpty(int folderEmpty) {
+        this.folderEmpty = folderEmpty;
     }
 
-    public int getFolderNum() {
-        return folderNum;
+    public int getIsEmpty() {
+        return isEmpty;
     }
 
-    public void setFolderNum(int folderNum) {
-        this.folderNum = folderNum;
+    public void setIsEmpty(int isEmpty) {
+        this.isEmpty = isEmpty;
     }
 }
