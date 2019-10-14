@@ -203,13 +203,14 @@
 	 *  添加子节点
 	 */
 	Tree.prototype.setAddNode = function (node, options) {
-		if (node.nodes == null) node.nodes = [];
-		if (options.node) {
-			$.each(options.node,function (index,option) {
-				node.nodes.push(option);
-			})
-		}
-	};
+			if (node.nodes == null) node.nodes = [];
+			if (options.node) {
+				$.each(options.node,function (index,option) {
+					node.nodes.push(option);
+				})
+			}
+		};
+
 	Tree.prototype.unsubscribeEvents = function () {
 
 		this.$element.off('click');

@@ -101,7 +101,7 @@ public class FolderController {
     private void queryFolder(FilePrams filePrams,List<FolderInfo> folderList){
         for (FolderInfo folderInfo : folderList) {
             filePrams.setFolderId(folderInfo.getFolderId());
-            if(folderInfoDao.queryFolder(filePrams)!=null){
+            if(folderInfoDao.queryFolder(filePrams).size()!=0){
                 folderInfo.setFolderEmpty(0);
             }
         }

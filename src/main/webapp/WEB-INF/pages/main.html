@@ -8,7 +8,7 @@
     <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script async="false" src="static/js/creatFile.js"></script>
     <script src="static/js/bootstrap-treeview.js"></script>
-    <script src="static/css/bootstrap-treeview.css"></script>
+    <script src="static/js/bootstrap-treeview.js"></script>
     <script>
         $(document).ready(function() {
             // 根据网址激活导航条
@@ -444,11 +444,14 @@
                     if(folderList[i].folderEmpty==0){
                         dirFolder.push({
                             text:folderList[i].folderName,
+                            id:folderList[i].folderId,
                             nodes:[],
+                            lazyLoad:true
                         });
                     }else{
                         dirFolder.push({
                             text:folderList[i].folderName,
+                            id:folderList[i].folderId,
                         });
                     }
                 }
@@ -462,7 +465,6 @@
             text: "全部文件夹",
             id:"",
             nodes: [],
-            lazyLoad:true
         }];
         return data;
     }
@@ -470,24 +472,21 @@
     $('#tree').treeview({
         data: getTree(),
         levels: 1,
-        loadingIcon:"fa fa-hourglass",//懒加载过程中显示的沙漏字符图标
-        // lazyLoad:loadData   //loadData为点击懒加载节点目录时，运行的函数名称，把后端的数据添加到这个节点下面
     });
 
-    $('#tree').on('nodeExpanded',function(event, data){
-        let nodes = getNodes(data.id);
-        console.log(nodes);
-        console.log(data.id);
-        $("#tree").treeview("addNode",[data.id,{nodes:nodes}]);
+    // $('#tree').treeview('expandNode', [ " ", { levels: 1, silent: true } ]);
+    //展开
+    $('#tree').on('nodeExpanded',function (event, node){
+        if(node.nodes.length!=0){
+            return
+        }
+        let nodes =getNodes(node.id);
+        $('#tree').treeview("addNode",[node.nodeId,{node:nodes}])
     });
-
-    // function loadData(node,func) {      //这个技巧真高，即能得到节点数据，又能把节点下级的数据通过函数发回去
-    //     console.log(node.id);
-    //     console.log("node.id");
-    //     var singleNode = getNodes(data.id);
-    //     func(singleNode);//把新的下级节点数据发回到后端，这样明显优雅很多
-    // }
-
-
+    //获取选中的文件夹id
+    var selectFolderId;
+    $('#tree').on('nodeSelected',function (event, node){
+        selectFolderId=node.id;
+    });
 </script>
 </html>
