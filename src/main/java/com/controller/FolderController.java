@@ -75,21 +75,19 @@ public class FolderController {
         String selectFolder=request.getParameter("selectFolder");
         FilePrams filePrams=new FilePrams(userId,folderId);
         Map<String,Object> data=new HashMap<>();
-        Map<String,FolderInfo> folderMap;
-        List<FileInfo> fileList = fileInfoDao.queryFile(filePrams);
         List<FolderInfo> folderList=folderInfoDao.queryFolder(filePrams);
         //判断是否为移动或复制文件遍历目录树
         if(selectFolder!=null){
-            folderMap=queryFolder(filePrams,folderList);
-            data.put("folderMap",folderMap);
+            queryFolder(filePrams,folderList);
         }else{
+            List<FileInfo> fileList = fileInfoDao.queryFile(filePrams);
             List<String> nameList=new ArrayList<>();
             List<String> idList=new ArrayList<>();
             getParent(filePrams,nameList,idList);
             data.put("nameList",nameList);
             data.put("idList",idList);
+            data.put("fileList",fileList);
         }
-        data.put("fileList",fileList);
         data.put("folderList",folderList);
         dataResult.setData(data);
         return dataResult;
@@ -100,16 +98,13 @@ public class FolderController {
      * @param filePrams
      * @param folderList
      */
-    private Map<String,FolderInfo> queryFolder(FilePrams filePrams,List<FolderInfo> folderList){
-        Map<String,FolderInfo> folderMap=new HashMap<>();
+    private void queryFolder(FilePrams filePrams,List<FolderInfo> folderList){
         for (FolderInfo folderInfo : folderList) {
             filePrams.setFolderId(folderInfo.getFolderId());
             if(folderInfoDao.queryFolder(filePrams)!=null){
                 folderInfo.setFolderEmpty(0);
             }
-            folderMap.put(folderInfo.getFolderId(),folderInfo);
         }
-        return folderMap;
     }
 
     /**

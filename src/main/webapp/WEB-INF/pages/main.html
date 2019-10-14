@@ -7,8 +7,8 @@
     <script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script async="false" src="static/js/creatFile.js"></script>
-    <script src="static/js/bootstrap-treeview.min.js"></script>
-    <script src="static/css/bootstrap-treeview.min.css"></script>
+    <script src="static/js/bootstrap-treeview.js"></script>
+    <script src="static/css/bootstrap-treeview.css"></script>
     <script>
         $(document).ready(function() {
             // 根据网址激活导航条
@@ -371,7 +371,7 @@
     }
     //取消创建文件夹
     function cancelFolderName(folderId) {
-        var nameId="tr"+folderId;
+        let nameId="tr"+folderId;
         $("#"+nameId).remove();
         label=0;
     }
@@ -379,7 +379,7 @@
     //进入文件夹
     function folder(folderId) {
         let backFolder;
-        $.post(pathUrl+"/folder/folder",
+        $.get(pathUrl+"/folder/folder",
             {
                 "folderId":folderId
             },
@@ -390,8 +390,10 @@
                 let idLength=idList.length;
                 if(idLength>=2){
                     backFolder=idList[idLength-2];
+                    backName=nameList[idLength-2];
                 }else{
                     backFolder="";
+                    backName="全部文件";
                 }
                 $("#dir").text("");
                 $("#dir").append("<a href='javascript:void(0);' onclick='folder(&quot;"+backFolder+"&quot;)'>返回上一层</a>|");
@@ -418,9 +420,14 @@
             return "_"+year + month + date+"_"+hour+minute+second;
         }
     }
-    var dirFolder=[];
+
+    function selectFolder() {
+        $('#myModal').modal();
+    }
+
     //移动或复制选择文件夹
-    function selectFolder(folderId) {
+    function getNodes(folderId) {
+        var dirFolder=[];
         if(folderId==null){
             folderId="";
         }
@@ -434,39 +441,53 @@
             function(result){
                 let folderList=result.data.folderList;
                 for (let i in folderList) {
-                    dirFolder.push({text:folderList[i].folderName,id:folderList[i].folderId})
+                    if(folderList[i].folderEmpty==0){
+                        dirFolder.push({
+                            text:folderList[i].folderName,
+                            nodes:[],
+                        });
+                    }else{
+                        dirFolder.push({
+                            text:folderList[i].folderName,
+                        });
+                    }
                 }
-                console.log(JSON.stringify(dirFolder));
-                $('#myModal').modal();
 
             });
         $.ajaxSettings.async = true;
+        return dirFolder;
     }
     function getTree() {
-        // var data = [{
-        //     text: "p1", id: '00001', nodes: [{
-        //         text: "p1-1", id: '00001' }, {
-        //         text: "p1-2", id: '00002' }, {
-        //         text: "p1-3", id: '00003', nodes: [{
-        //             text: 'p1-3-1', id: '00006'}]}, {
-        //         text: "p1-4", id: '00004', nodes: [{
-        //             text: 'p1-4-1', id: '00005'}]}
-        //     ]
-        // }];
-        var data = [
-            {text: "新建文件夹1", id: 'f4b9ec30ad9f68f89b29639786cb62ef'},
-            {text: "新建文件夹2", id: '9778d5d219c5080b9a6a17bef029331c'}
-        ];
-        console.log("getTree:"+JSON.stringify(data));
+        var data = [{
+            text: "全部文件夹",
+            id:"",
+            nodes: [],
+            lazyLoad:true
+        }];
         return data;
     }
+
     $('#tree').treeview({
         data: getTree(),
-        levels: 2,
+        levels: 1,
+        loadingIcon:"fa fa-hourglass",//懒加载过程中显示的沙漏字符图标
+        // lazyLoad:loadData   //loadData为点击懒加载节点目录时，运行的函数名称，把后端的数据添加到这个节点下面
     });
-    $('#tree').on('nodeExpanded',function(event, data) {
+
+    $('#tree').on('nodeExpanded',function(event, data){
+        let nodes = getNodes(data.id);
+        console.log(nodes);
         console.log(data.id);
+        $("#tree").treeview("addNode",[data.id,{nodes:nodes}]);
     });
+
+    // function loadData(node,func) {      //这个技巧真高，即能得到节点数据，又能把节点下级的数据通过函数发回去
+    //     console.log(node.id);
+    //     console.log("node.id");
+    //     var singleNode = getNodes(data.id);
+    //     func(singleNode);//把新的下级节点数据发回到后端，这样明显优雅很多
+    // }
+
 
 </script>
 </html>
