@@ -100,7 +100,7 @@
                 <div id="tree"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary">确定</button>
+                <button type="button" class="btn btn-primary" onclick="confirmSelectFolder()">确定</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
             </div>
         </div>
@@ -133,7 +133,7 @@
     var pathUrl = encodeURI(window.location.protocol+"//"+ window.location.host+"/"+secondLevelLocation);
     var username=$.cookie("cookieUsername");
     var userId=$.cookie("cookieUserId");
-    var selectFolderList;
+
     $(document).ready(function () {
         $("#nickname").text(username);
         main();
@@ -176,8 +176,8 @@
                 "                    <div class=\"btn-group\"><button type=\"button\" class=\"btn btn-primary dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">更多<span class=\"caret\"></span></button>\n" +
                 "                        <ul class=\"dropdown-menu\">\n" +
                 "                            <li><a href=\"#\" onclick=\"reName(&quot;"+folder.folderId+"&quot;,&quot;"+folder.isFolder+"&quot;)\" >重命名</a></li>\n" +
-                "                            <li><a href='javascript:void(0);' onclick='selectFolder()'>移动</a></li>\n" +
-                "                            <li><a href=\"#\">复制</a></li>\n" +
+                "                            <li><a href='javascript:void(0);' onclick='selectFolder(this)'>移动</a></li>\n" +
+                "                            <li><a href='javascript:void(0);' onclick='selectFolder(this)'>复制</a></li>\n" +
                 "                            <li><a href=\"#\" onclick=\"recycleFolder("+i+")\">删除</a></li>\n" +
                 "                        </ul>\n" +
                 "                    </div>\n" +
@@ -203,8 +203,8 @@
                 "                <div class=\"btn-group\"><button type=\"button\" class=\"btn btn-primary dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">更多<span class=\"caret\"></span></button>\n" +
                 "                <ul class=\"dropdown-menu\">\n" +
                 "                    <li><a href=\"#\" id=\"reName"+i+"\" onclick='reName(\""+file.fileId+"\",\""+file.isFolder+"\")'>重命名</a></li>\n" +
-                "                    <li><a href='javascript:void(0);' onclick='selectFolder()'>移动</a></li>\n" +
-                "                    <li><a href=\"#\">复制</a></li>\n" +
+                "                    <li><a href='javascript:void(0);' onclick='selectFolder(this)'>移动</a></li>\n" +
+                "                    <li><a href='javascript:void(0);' onclick='selectFolder(this)'>复制</a></li>\n" +
                 "                    <li><a href=\"#\" onclick=\"recycleFile("+i+")\">删除</a></li>\n" +
                 "                </ul>\n" +
                 "                </div>\n" +
@@ -332,8 +332,8 @@
             "                <div class=\"btn-group\"><button type=\"button\" class=\"btn btn-primary dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">更多<span class=\"caret\"></span></button>\n" +
             "                <ul class=\"dropdown-menu\">\n" +
             "                    <li><a href=\"#\" id=\"reFolderName"+folderId+"\" onclick=\"reFolderName(&quot;"+folderId+"&quot;)\" >重命名</a></li>\n" +
-            "                    <li><a href='javascript:void(0);' onclick='selectFolder()'>移动</a></li>\n" +
-            "                    <li><a href=\"#\">复制</a></li>\n" +
+            "                    <li><a href='javascript:void(0);' onclick='selectFolder(this)'>移动</a></li>\n" +
+            "                    <li><a href='javascript:void(0);' onclick='selectFolder(this)'>复制</a></li>\n" +
             "                </ul>\n" +
             "                </div>\n" +
             "        </tr>");
@@ -400,7 +400,6 @@
                 for (let i = 0; i < idLength; i++) {
                     $("#dir").append("<a href='javascript:void(0);' onclick='folder(&quot;"+idList[i]+"&quot;)'>"+nameList[i]+"</a>/");
                 }
-
             });
     }
 
@@ -420,8 +419,17 @@
             return "_"+year + month + date+"_"+hour+minute+second;
         }
     }
-
-    function selectFolder() {
+    var selectType;
+    function selectFolder(e) {
+        if($(e).text()=="移动"){
+            selectType="move";
+        }if($(e).text()=="复制"){
+            selectType="copy";
+        }
+        $(e).closest("tr").find(":checkbox").attr("checked","checked");
+        getList("select");
+        console.log(folderIdList);
+        console.log(fileIdList);
         $('#myModal').modal();
     }
 
@@ -483,10 +491,39 @@
         let nodes =getNodes(node.id);
         $('#tree').treeview("addNode",[node.nodeId,{node:nodes}])
     });
+    var targetId;
+    var targetName;
     //获取选中的文件夹id
-    var selectFolderId;
     $('#tree').on('nodeSelected',function (event, node){
-        selectFolderId=node.id;
+        targetId=node.id;
+        targetName=node.text;
     });
+
+    function confirmSelectFolder() {
+        // let moveFilePrams=[];
+        // moveFilePrams.fileIdList=fileIdList;
+        // moveFilePrams.folderIdList=folderIdList;
+        // moveFilePrams.targetId=targetId;
+        // moveFilePrams.selectType=selectType;
+        // if(folderIdList.length==0){
+        //     folderIdList=[""];
+        // }
+        // if(fileIdList==0){
+        //     fileIdList=[""];
+        // }
+        let json={"fileIdList":fileIdList,"folderIdList":folderIdList,"targetId":targetId,"targetName":targetName,"selectType":selectType};
+        console.log(json);
+        console.log(JSON.stringify(json));
+        $.ajax({
+            url: pathUrl+"/folder/moveOrCopy",
+            data:JSON.stringify(json),
+            contentType: 'application/json; charset=UTF-8',
+            type: "post",
+            success: function (result) {
+                console.log("success")
+            }
+        }
+        )
+    }
 </script>
 </html>

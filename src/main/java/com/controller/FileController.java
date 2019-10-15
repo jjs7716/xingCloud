@@ -128,10 +128,8 @@ public class FileController {
             String fileKey=DigestUtils.md5DigestAsHex(is);
             //设置文件的md5信息
             fileInfo.setFileKey(fileKey);
-            //根据当前时间和文件名计算md5
-            String currentTime = Long.toString(System.currentTimeMillis());
-            byte[] fileBytes=(currentTime+filename).getBytes();
-            String fileId = DigestUtils.md5DigestAsHex(fileBytes);
+            //根据UUID生成文件Id
+            String fileId = XingUtils.getUUID();
             fileInfo.setFileId(fileId);
             //上传文件,以后用md5来标记文件,以后用来减少重复
             try {

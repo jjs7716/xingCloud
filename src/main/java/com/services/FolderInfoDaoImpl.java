@@ -2,11 +2,10 @@ package com.services;
 
 import com.dao.FileInfoDao;
 import com.dao.FolderInfoDao;
-import com.domain.FilePrams;
-import com.domain.FolderInfo;
-import com.domain.User;
+import com.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import utils.XingUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,14 +41,31 @@ public class FolderInfoDaoImpl implements FolderInfoDao {
     }
 
     @Override
-    public void moveToFolder(List<String> fileIdList, String folderId) {
-        folderInfoDao.moveToFolder(fileIdList,folderId);
+    public void moveFolder(MoveFilePrams moveFilePrams) {
+
     }
 
     @Override
-    public void copyToFolder(List<String> fileIdList, String folderId) {
-        folderInfoDao.copyToFolder(fileIdList,folderId);
+    public void copyFolder(MoveFilePrams moveFilePrams) {
+
     }
+
+    @Override
+    public void moveFile(MoveFilePrams moveFilePrams) {
+        folderInfoDao.moveFile(moveFilePrams);
+    }
+
+    @Override
+    public void copyFile(MoveFilePrams moveFilePrams) {
+        FilePrams filePrams = new FilePrams();
+        List<String> newFileIdList=new ArrayList<>();
+        List<FileInfo> fileInfos = fileInfoDao.queryById(moveFilePrams.getFileIdList());
+        for (int i = 0; i < fileInfos.size(); i++) {
+            fileInfos.get(i).setFileId(XingUtils.getUUID());
+        }
+        folderInfoDao.copyFile(moveFilePrams);
+    }
+
 
     @Override
     public void recoverFolder(List<String> folderIdList, String folderUid) {

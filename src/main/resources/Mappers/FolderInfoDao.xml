@@ -55,17 +55,23 @@
     <update id="reFolderName">
         update folderinfo set folder_name=#{newFolderName} where folder_id=#{folderId}
     </update>
-<!--移动文件-->
-    <update id="moveToFolder">
-        update fileinfo set parent_id=#{folderId} where file_id in
-        <foreach item="fileId" index="index" collection="fileIdList" open="(" separator="," close=")">
-        #{fileId}
-        </foreach>
-    </update>
-<!--复制文件夹-->
-    <update id="copyToFolder">
+<!--移动文件夹-->
+    <update id="moveFolder">
 
     </update>
+<!--复制文件夹-->
+    <update id="copyFolder">
+
+    </update>
+<!--移动文件-->
+    <update id="moveFile">
+        update fileinfo set parent_id=#{targetId},parent_name=#{targetName} where file_id in
+        <foreach item="fileId" index="index" collection="fileIdList" open="(" separator="," close=")">
+            #{fileId}
+        </foreach>
+    </update>
+<!--复制文件-->
+    <update id="copyFile"></update>
 <!--删除-->
     <update id="recycleFolder">
         update folderinfo set folder_state =1,delete_time=now(),delete_day=30 where folder_uid=#{folderUid} and folder_id in
@@ -81,5 +87,6 @@
             #{folderId}
         </foreach>
     </update>
+
 </mapper>
 

@@ -154,4 +154,8 @@ public class XingUtils {
         }
         return sb.toString();
     }
+
+    public static String getUUID(){
+        return UUID.randomUUID().toString().replace("-", "");
+    }
 }

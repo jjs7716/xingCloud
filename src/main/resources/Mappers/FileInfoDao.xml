@@ -121,7 +121,7 @@
 
     <!--根据id查找  返回String文件名-->
     <select id="queryById" resultMap="fileMap">
-        select file_id,file_name,file_key,file_uid from fileinfo where file_id in
+        select * from fileinfo where file_id in
         <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
             #{item}
         </foreach>

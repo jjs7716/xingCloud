@@ -78,8 +78,7 @@ public class Login {
      * @return
      * @throws IOException
      */
-    //注意produces中的属性必须为application/json
-    @RequestMapping(path = "/login",produces = {"application/json;charset=utf-8"})
+    @RequestMapping(path = "/login")
     @ResponseBody
     public DataResult loginCheck(HttpServletRequest request,@RequestBody String json) throws IOException {
         //结果集

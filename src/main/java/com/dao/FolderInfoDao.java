@@ -1,8 +1,6 @@
 package com.dao;
 
-import com.domain.FilePrams;
-import com.domain.FolderInfo;
-import com.domain.User;
+import com.domain.*;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -38,18 +36,29 @@ public interface FolderInfoDao {
     void reFolderName(@Param("folderId") String folderId,@Param("newFolderName") String newFolderName);
 
     /**
-     * 移动到指定文件夹
-     * @param fileIdList    移动的文件id列表
-     * @param folderId      指定的文件夹id
+     * 移动文件夹
+     * @param moveFilePrams
      */
-    void moveToFolder(@Param("fileIdList") List<String> fileIdList,@Param("folderId") String folderId);
+    void moveFolder(MoveFilePrams moveFilePrams);
 
     /**
-     * 复制到指定文件夹
-     * @param fileIdList    复制的文件id列表
-     * @param folderId      指定的文件夹id
+     * 复制文件夹
+     * @param folderInfos
+     * @param fileInfos
      */
-    void copyToFolder(@Param("fileIdList") List<String> fileIdList,@Param("folderId") String folderId);
+    void copyFolder(List<FolderInfo> folderInfos,List<FileInfo> fileInfos);
+
+    /**
+     * 移动文件
+     * @param moveFilePrams
+     */
+    void moveFile(MoveFilePrams moveFilePrams);
+
+    /**
+     * 复制文件
+     * @param fileInfos
+     */
+    void copyFile(List<FileInfo> fileInfos);
 
     /**
      * 恢复文件夹

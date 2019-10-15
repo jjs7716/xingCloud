@@ -159,6 +159,13 @@ public class FolderController {
         }
     }
 
+    @RequestMapping(path="moveOrCopy",produces = {"application/json; charset=UTF-8"})
+    public String moveAndCopy(HttpServletRequest request,@RequestBody String json) throws IOException {
+        MoveFilePrams moveFilePrams = mapper.readValue(json, MoveFilePrams.class);
+        System.out.println(moveFilePrams);
+        return "success";
+    }
+
 //    /**
 //     * 恢复文件夹及其包含的所有文件
 //     * @param request
