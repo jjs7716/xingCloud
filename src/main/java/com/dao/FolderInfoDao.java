@@ -15,11 +15,24 @@ public interface FolderInfoDao {
     void creatFolder(FolderInfo folderInfo);
 
     /**
-     * 查找用户所有文件夹
+     * 插入文件夹信息
+     * @param folderInfoList
+     */
+    void insertFolder(List<FolderInfo> folderInfoList);
+
+    /**
+     * 根据文件夹ID查其子信息
      * @param filePrams
      * @return
      */
     List<FolderInfo> queryFolder(FilePrams filePrams);
+
+    /**
+     * 根据ID查询文件夹信息
+     * @param folderIdList
+     * @return
+     */
+    List<FolderInfo> queryFolderById(@Param("filePrams")FilePrams filePrams,@Param("folderIdList")List<String> folderIdList);
 
     /**
      * 查找用户在回收站的所有文件夹
@@ -42,23 +55,10 @@ public interface FolderInfoDao {
     void moveFolder(MoveFilePrams moveFilePrams);
 
     /**
-     * 复制文件夹
-     * @param folderInfos
-     * @param fileInfos
-     */
-    void copyFolder(List<FolderInfo> folderInfos,List<FileInfo> fileInfos);
-
-    /**
      * 移动文件
      * @param moveFilePrams
      */
     void moveFile(MoveFilePrams moveFilePrams);
-
-    /**
-     * 复制文件
-     * @param fileInfos
-     */
-    void copyFile(List<FileInfo> fileInfos);
 
     /**
      * 恢复文件夹

@@ -34,7 +34,7 @@ public interface FileInfoDao {
      * @param
      * @return
      */
-    List<FileInfo> queryById(List<String> list);
+    List<FileInfo> queryById(FilePrams filePrams);
 
     /**
      * 根据文件唯一标识码查找是否重复
@@ -103,7 +103,6 @@ public interface FileInfoDao {
     List<FileInfo> searchByImg(String userId);
 
     List<FileInfo> searchByOther(String userId);
-
 
 //    Integer getDeleteDay(FileInfo fileInfo);
 

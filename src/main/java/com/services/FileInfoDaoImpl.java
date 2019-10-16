@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 @Service
@@ -30,15 +31,9 @@ public class FileInfoDaoImpl implements FileInfoDao {
         fileInfoDao.insertInfo(fileInfo);
     }
 
-    public List<FileInfo> queryById(String id) {
-        List<String> list=new ArrayList<>();
-        list.add(id);
-        return fileInfoDao.queryById(list);
-    }
-
     @Override
-    public List<FileInfo> queryById(List<String> list) {
-       return fileInfoDao.queryById(list);
+    public List<FileInfo> queryById(FilePrams filePrams) {
+       return fileInfoDao.queryById(filePrams);
     }
 
     @Override

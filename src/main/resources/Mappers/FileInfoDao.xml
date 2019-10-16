@@ -21,6 +21,7 @@
         <result property="deleteDay" column="delete_day"></result>
         <result property="fileState" column="file_state"></result>
     </resultMap>
+
     <!--    插入文件信息-->
     <insert id="insertInfo">
         insert into fileinfo (file_id,file_name,file_size,file_uid,update_time,file_key,parent_id,parent_name,str_file_size,file_type)
@@ -29,7 +30,7 @@
 
 <!--    根据用户id查找文件名 -->
     <select id="queryFile" resultMap="fileMap">
-        select * from fileinfo where file_uid=#{userId} and file_state = 0 and parent_id=#{folderId}  order by update_time desc;
+        select * from fileinfo where file_uid=#{userId} and file_state = 0 and parent_id=#{folderId} order by update_time desc;
     </select>
 
     <!--    显示回收站文件 -->
@@ -119,15 +120,26 @@
         delete from fileinfo where file_state=1 and delete_day &lt; 0
     </delete>
 
-    <!--根据id查找  返回String文件名-->
-    <select id="queryById" resultMap="fileMap">
-        select * from fileinfo where file_id in
-        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
-            #{item}
-        </foreach>
+    <!--根据id查找  返回文件信息-->
+    <select id="queryById" resultMap="fileMap" parameterType="com.domain.FilePrams">
+        select * from fileinfo where
+         <if test="userId !=null">
+             file_uid=#{userId} and
+         </if>
+         <choose>
+             <when test="fileId !=null">
+                 file_id=#{fileId}
+             </when>
+             <otherwise>
+                 file_id in
+                 <foreach item="fileId" index="index" collection="fileIdList" open="(" separator="," close=")">
+                     #{fileId}
+                 </foreach>
+             </otherwise>
+         </choose>
     </select>
 
-    <!--根据id查找  返回String文件名-->
+    <!--根据key查找  返回String文件名-->
     <select id="queryByFileKey" resultType="String">
         select file_name from fileinfo where file_key=#{fileKey}
     </select>

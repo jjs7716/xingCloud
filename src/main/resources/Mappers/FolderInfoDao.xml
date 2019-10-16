@@ -22,6 +22,14 @@
         insert into folderinfo (folder_id, folder_name, folder_uid, update_time, parent_id ,parent_name, delete_day, folder_state)
         values(#{folderId},#{folderName},#{folderUid},#{updateTime},#{parentId},#{parentName},#{deleteDay},#{folderState})
     </insert>
+
+    <insert id="insertFolder">
+        insert into folderinfo (folder_id, folder_name, folder_uid, update_time, parent_id ,parent_name, delete_day, folder_state)
+        values
+        <foreach collection="folderInfoList"  item="folderInfo" index="index" open="(" separator="," close=")">
+            (#{folderinfo.folderId},#{folderinfo.folderName},#{folderinfo.folderUid},#{folderinfo.updateTime},#{folderinfo.parentId},#{folderinfo.parentName},#{folderinfo.deleteDay},#{folderinfo.folderState})
+        </foreach>
+    </insert>
 <!--彻底删除-->
     <delete id="deleteFolder">
         delete from folderinfo where folder_uid=#{folderUid} and folder_id in
@@ -29,7 +37,8 @@
             #{folderId}
         </foreach>
     </delete>
-<!--查找正常的文件夹-->
+
+<!--根据文件夹ID查其子信息-->
     <select id="queryFolder" resultMap="folderMap">
         select * from folderinfo where folder_uid=#{userId} and folder_state = 0
         <choose>
@@ -51,7 +60,22 @@
     <select id="queryFolderByRecycle" resultMap="folderMap">
         select * from folderinfo where folder_uid=#{userId} and folder_state = 1 and parent_id="";
     </select>
-<!--重命名文件-->
+<!--根据文件夹ID查文件夹信息-->
+    <select id="queryFolderById" resultMap="folderMap">
+        select * from folderinfo where folder_uid=#{filePrams.userId} and folder_state = 0 and folder_id in
+        <foreach collection="folderIdList"  item="folderId" index="index" open="(" separator="," close=")">
+            <choose>
+                <when test="folderId != null">
+                     #{folderId}
+                </when>
+                <otherwise>
+                    ""
+                </otherwise>
+            </choose>
+        </foreach>
+        order by folder_name;
+    </select>
+    <!--重命名文件-->
     <update id="reFolderName">
         update folderinfo set folder_name=#{newFolderName} where folder_id=#{folderId}
     </update>
@@ -59,19 +83,13 @@
     <update id="moveFolder">
 
     </update>
-<!--复制文件夹-->
-    <update id="copyFolder">
-
-    </update>
 <!--移动文件-->
     <update id="moveFile">
-        update fileinfo set parent_id=#{targetId},parent_name=#{targetName} where file_id in
+        update fileinfo set parent_id=#{targetId},parent_name=#{targetName} where file_uid=#{userId} and file_id in
         <foreach item="fileId" index="index" collection="fileIdList" open="(" separator="," close=")">
             #{fileId}
         </foreach>
     </update>
-<!--复制文件-->
-    <update id="copyFile"></update>
 <!--删除-->
     <update id="recycleFolder">
         update folderinfo set folder_state =1,delete_time=now(),delete_day=30 where folder_uid=#{folderUid} and folder_id in

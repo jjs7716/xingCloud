@@ -3,7 +3,7 @@ package com.domain;
 import java.util.List;
 
 public class MoveFilePrams {
-
+    private String userId;
     private List<String> fileIdList;
     private List<String> folderIdList;
     private String selectType;
@@ -19,6 +19,21 @@ public class MoveFilePrams {
                 ", targetId='" + targetId + '\'' +
                 ", targetName='" + targetName + '\'' +
                 '}';
+    }
+
+    public MoveFilePrams(){
+
+    }
+    public MoveFilePrams(String userId) {
+        this.userId = userId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getTargetName() {

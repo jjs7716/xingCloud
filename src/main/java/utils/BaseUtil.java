@@ -1,6 +1,9 @@
 package utils;
 
+import com.domain.FilePrams;
 import com.domain.User;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class BaseUtil {
 
@@ -24,5 +27,17 @@ public class BaseUtil {
      */
     public static String getFolder(){
         return userHome+property+"UpLoad"+property;
+    }
+
+
+    public static User getUser(HttpServletRequest request){
+        return (User) request.getSession().getAttribute("user");
+    }
+
+    public static String getUserId(HttpServletRequest request){
+        if(getUser(request)==null){
+            return "";
+        }
+        return getUser(request).getUserId();
     }
 }

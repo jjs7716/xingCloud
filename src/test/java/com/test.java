@@ -1,12 +1,12 @@
 package com;
 
+import com.controller.FolderController;
 import com.dao.FileInfoDao;
 import com.dao.FolderInfoDao;
 import com.dao.UserDao;
-import com.domain.FileInfo;
-import com.domain.MoveFilePrams;
-import com.domain.User;
+import com.domain.*;
 import com.services.DiskFileDaoImpl;
+import com.services.FolderInfoDaoImpl;
 import com.services.UserDaoImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,13 +43,16 @@ public class test {
     private FileInfoDao fileInfoDao;
 
     @Autowired
-    private FolderInfoDao folderInfoDao;
+    private FolderInfoDaoImpl folderInfoDao;
 
     @Autowired
     private UserDaoImpl userDaoImpl;
 
     @Autowired
     private DiskFileDaoImpl diskFileDao;
+
+    @Autowired
+    private FolderController folderController;
     @Test
     public void test1() throws InterruptedException {
         MoveFilePrams moveFilePrams = new MoveFilePrams();
@@ -101,10 +104,64 @@ public class test {
 
     @Test
     public void test4(){
-        for (int i = 0; i < 10; i++) {
+//        MoveFilePrams moveFilePrams = new MoveFilePrams();
+//        moveFilePrams.setUserId("d4e2e762de5eb3232441447cadee4d4e");
+//        List<String> fileIdList=new ArrayList<>();
+//        fileIdList.add("e269a7fbfcc4d3d192d42287fd176894");
+//        fileIdList.add("a413a31114b3d2a79b3485d74ee75b2b");
+//        moveFilePrams.setFileIdList(fileIdList);
+//        moveFilePrams.setTargetName("新建文件夹1-2-1");
+//        moveFilePrams.setTargetId("eeb69a3cb92300456b6a5f4162093851");
+//        folderInfoDao.copyFile(moveFilePrams);
 
-            System.out.println(XingUtils.getUUID());
+//        DataResult dataResult=new DataResult();
+//        Map<String,Object> data1=new HashMap<>();
+//        Map<String,Object> data2=new HashMap<>();
+        FilePrams filePrams=new FilePrams();
+        filePrams.setUserId("d4e2e762de5eb3232441447cadee4d4e");
+//        filePrams.setFolderId("f4b9ec30ad9f68f89b29639786cb62ef");
+//        Set<String> strings=new HashSet<>();
+//        strings.add(filePrams.getFolderId());
+        List<String> folderIdList=new ArrayList<>();
+        folderIdList.add("428fca9bc1921c25c5121f9da7815cde");
+        folderIdList.add("210f760a89db30aa72ca258a3483cc7f");
+//        folderController.getFolderName(filePrams,data1);
+//        folderController.getFolderName(filePrams,data2,folderIdList);
+        List<FolderInfo> folderInfoList = folderInfoDao.getFolderInfoList(filePrams,new HashMap<>());
+//        for (FolderInfo folderInfo : folderInfoList) {
+//            System.out.println(folderInfo);
+//        }
+//        test6();
+//        test5(data2,strings);
+//        System.out.println(folderIdList);
+
+    }
+
+    private void test5(Map<String,Object> data,Set<String> strings){
+        if(!data.isEmpty()){
+            Set<String> set = data.keySet();
+            strings.addAll(set);
+            for (String string : set) {
+                Map<String,Object> map=(Map)data.get(string);
+                test5(map,strings);
+            }
         }
     }
+    @Test
+    public void test6(){
+        FilePrams filePrams=new FilePrams();
+        filePrams.setUserId("d4e2e762de5eb3232441447cadee4d4e");
+        List<String> folderIdList=new ArrayList<>();
+//        folderIdList.add("428fca9bc1921c25c5121f9da7815cde");
+        folderIdList.add("210f760a89db30aa72ca258a3483cc7f");
+//        filePrams.setFolderIdList(folderIdList);
+        filePrams.setFolderId("210f760a89db30aa72ca258a3483cc7f");
+        Map<String,Object> data=new HashMap<>();
+        List<FolderInfo> folderInfoList=new ArrayList<>();
+        folderInfoDao.getFolder(filePrams,data,folderInfoList);
+        System.out.println(data);
+        System.out.println(folderInfoList);
+    }
+
 
 }

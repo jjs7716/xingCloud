@@ -60,7 +60,7 @@ public class Login {
 //        //声明回收站保存时间
 //        Integer saveDay=30;
         User user = (User) session.getAttribute("user");
-        FilePrams filePrams=new FilePrams(user.getUserId(),"");
+        FilePrams filePrams=new FilePrams(user.getUserId());
         //获取用户在回收站的所有文件
         List<FileInfo> fileList = fileInfoDao.queryFileByRecycle(filePrams);
         List<FolderInfo> folderList=folderInfoDao.queryFolderByRecycle(filePrams);

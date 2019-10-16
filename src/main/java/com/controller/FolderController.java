@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.w3c.dom.html.HTMLParagraphElement;
+import utils.BaseUtil;
 import utils.DateUtil;
 
 import javax.servlet.http.HttpServletRequest;
@@ -73,17 +74,18 @@ public class FolderController {
         String userId= ((User) request.getSession().getAttribute("user")).getUserId();
         String folderId = request.getParameter("folderId");
         String selectFolder=request.getParameter("selectFolder");
-        FilePrams filePrams=new FilePrams(userId,folderId);
+        FilePrams filePrams=new FilePrams(userId);
+        filePrams.setFolderId(folderId);
         Map<String,Object> data=new HashMap<>();
         List<FolderInfo> folderList=folderInfoDao.queryFolder(filePrams);
         //判断是否为移动或复制文件遍历目录树
         if(selectFolder!=null){
-            queryFolder(filePrams,folderList);
+            folderInfoDao.queryFolder(filePrams,folderList);
         }else{
             List<FileInfo> fileList = fileInfoDao.queryFile(filePrams);
             List<String> nameList=new ArrayList<>();
             List<String> idList=new ArrayList<>();
-            getParent(filePrams,nameList,idList);
+            folderInfoDao.getParent(filePrams,nameList,idList);
             data.put("nameList",nameList);
             data.put("idList",idList);
             data.put("fileList",fileList);
@@ -93,38 +95,6 @@ public class FolderController {
         return dataResult;
     }
 
-    /**
-     * 遍历子文件夹是否为空
-     * @param filePrams
-     * @param folderList
-     */
-    private void queryFolder(FilePrams filePrams,List<FolderInfo> folderList){
-        for (FolderInfo folderInfo : folderList) {
-            filePrams.setFolderId(folderInfo.getFolderId());
-            if(folderInfoDao.queryFolder(filePrams).size()!=0){
-                folderInfo.setFolderEmpty(0);
-            }
-        }
-    }
-
-    /**
-     * 获取当前文件夹的全路径
-     * @param filePrams
-     * @param nameList
-     * @param idList
-     */
-    private void getParent(FilePrams filePrams,List<String> nameList,List<String> idList){
-        FolderInfo folderInfo = folderInfoDao.queryParent(filePrams);
-        if(folderInfo!=null){
-            filePrams.setFolderId(folderInfo.getParentId());
-            nameList.add(folderInfo.getFolderName());
-            idList.add(folderInfo.getFolderId());
-            getParent(filePrams,nameList,idList);
-        }else {
-            Collections.reverse(nameList);
-            Collections.reverse(idList);
-        }
-    }
 
     /**
      * 获取指定文件夹目录树
@@ -137,35 +107,40 @@ public class FolderController {
         Map<String,Object> data=new HashMap<>();
         FilePrams filePrams=new FilePrams();
         filePrams.setUserId(((User)request.getSession().getAttribute("user")).getUserId());
-        getFolder(filePrams,data);
+        folderInfoDao.getFolderInfoList(filePrams,data);
         dataResult.setData(data);
         return dataResult;
     }
 
     /**
-     * 递归获取全部目录树
-     * @param filePrams
-     * @param frontMap
+     * 复制或者移动
+     * @param request
+     * @param json
+     * @return
+     * @throws IOException
      */
-    private void getFolder(FilePrams filePrams,Map<String,Object> frontMap){
-        List<FolderInfo> FolderInfoList=folderInfoDao.queryFolder(filePrams);
-        if(FolderInfoList.size()>0){
-            for (int i = 0; i < FolderInfoList.size(); i++) {
-                Map<String,Object> map=new HashMap<>();
-                filePrams.setFolderId(FolderInfoList.get(i).getFolderId());
-                frontMap.put(FolderInfoList.get(i).getFolderName(),map);
-                getFolder(filePrams,map);
-            }
-        }
-    }
-
     @RequestMapping(path="moveOrCopy",produces = {"application/json; charset=UTF-8"})
     public String moveAndCopy(HttpServletRequest request,@RequestBody String json) throws IOException {
         MoveFilePrams moveFilePrams = mapper.readValue(json, MoveFilePrams.class);
-        System.out.println(moveFilePrams);
+        moveFilePrams.setUserId(BaseUtil.getUserId(request));
+        if("copy".equals(moveFilePrams.getSelectType())){
+            copy(moveFilePrams);
+        }
+        if("move".equals(moveFilePrams.getSelectType())){
+            move(moveFilePrams);
+        }
         return "success";
     }
 
+    private void copy(MoveFilePrams moveFilePrams){
+        folderInfoDao.copyFolder(moveFilePrams);
+        folderInfoDao.copyFile(moveFilePrams);
+    }
+
+    private void move(MoveFilePrams moveFilePrams){
+        folderInfoDao.moveFolder(moveFilePrams);
+        folderInfoDao.moveFile(moveFilePrams);
+    }
 //    /**
 //     * 恢复文件夹及其包含的所有文件
 //     * @param request

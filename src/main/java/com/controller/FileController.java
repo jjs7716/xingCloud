@@ -68,12 +68,12 @@ public class FileController {
     @RequestMapping(path = "/main")
     public DataResult main(HttpServletRequest request) {
         DataResult dataResult=new DataResult();
-        User user= (User) request.getSession().getAttribute("user");
-        FilePrams filePrams=new FilePrams(user.getUserId(),"");
+        User user= BaseUtil.getUser(request);
         if(user==null){
             dataResult.setStatus(false);
             return dataResult;
         }
+        FilePrams filePrams=new FilePrams(user.getUserId());
         List<FileInfo> fileList = fileInfoDao.queryFile(filePrams);
         List<FolderInfo> folderList=folderInfoDao.queryFolder(filePrams);
         Map<String,Object> data=new HashMap<>();
@@ -91,8 +91,7 @@ public class FileController {
      */
     @RequestMapping(path = "/upload")
     public String upload(HttpServletRequest request) throws IOException {
-        User user= (User) request.getSession().getAttribute("user");
-        String userId=user.getUserId();
+        String userId=BaseUtil.getUserId(request);
         //强转使用AJAX来获取,传统MultipartFile获取不到
         MultipartHttpServletRequest ms= (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = ms.getFileMap();
@@ -175,7 +174,9 @@ public class FileController {
     }
 
     private void downloadFile(String fileId,HttpServletRequest request,HttpServletResponse response) throws IOException {
-        List<FileInfo> byId = fileInfoDao.queryById(fileId);
+        FilePrams filePrams = new FilePrams();
+        filePrams.setFileId(fileId);
+        List<FileInfo> byId = fileInfoDao.queryById(filePrams);
         String fileName= byId.get(0).getFileName();
         String fileKey=byId.get(0).getFileKey();
         //调用下载方法
@@ -183,10 +184,9 @@ public class FileController {
     }
 
     private void downloadFolder(String folderId,HttpServletRequest request,HttpServletResponse response) throws IOException {
-        String userId = ((User) request.getSession().getAttribute("user")).getUserId();
-        FilePrams filePrams=new FilePrams();
+        String userId = BaseUtil.getUserId(request);
+        FilePrams filePrams=new FilePrams(userId);
         filePrams.setFolderId(folderId);
-        filePrams.setUserId(userId);
         List<FileInfo> fileInfos = fileInfoDao.queryFile(filePrams);
         if(fileInfos.size()>0){
             //压缩文件名
@@ -209,12 +209,14 @@ public class FileController {
      */
     @RequestMapping(path = "/downloads")
     public void downLoadFiles(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        FilePrams filePrams=new FilePrams();
         //获取选中的ID封装为Map
         Map<String, String[]> map = request.getParameterMap();
         //将Map转换为List集合
-        List<String> idList = new ArrayList<>(Arrays.asList(map.get("fileId")));
+        List<String> fileIdList = new ArrayList<>(Arrays.asList(map.get("fileId")));
+        filePrams.setFileIdList(fileIdList);
         //根据fileId查找文件名,并返回集合 注:不是真实路径
-        List<FileInfo> fileList=fileInfoDao.queryById(idList);
+        List<FileInfo> fileList=fileInfoDao.queryById(filePrams);
         //判断如果是一个文件,就不压缩,直接下载
         if(fileList.size()==1){
             down(fileList.get(0).getFileKey(),request,response);
@@ -293,7 +295,7 @@ public class FileController {
     @RequestMapping(path = "/search")
     public DataResult search(HttpServletRequest request, @RequestBody String json) throws IOException {
         Map<String,Object> data = mapper.readValue(json, Map.class);
-        String userId = ((User) request.getSession().getAttribute("user")).getUserId();
+        String userId = BaseUtil.getUserId(request);
         String type = (String) data.get("type");
         String search = (String) data.get("search");
         search=(search==null)?"":search;
