@@ -18,7 +18,7 @@
 		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
      <!--    开启包扫描-->
     <context:component-scan base-package="com"/>
-    <context:component-scan base-package="utils"/>
+
 
 
      <!--    引入配置文件-->

@@ -32,8 +32,18 @@ public class FileInfoDaoImpl implements FileInfoDao {
     }
 
     @Override
+    public void insertFiles(List<FileInfo> fileInfoList) {
+        fileInfoDao.insertFiles(fileInfoList);
+    }
+
+    @Override
     public List<FileInfo> queryById(FilePrams filePrams) {
        return fileInfoDao.queryById(filePrams);
+    }
+
+    @Override
+    public List<FileInfo> queryByIdList(FilePrams filePrams, List<String> fileIdList) {
+        return fileInfoDao.queryByIdList(filePrams,fileIdList);
     }
 
     @Override

@@ -9,8 +9,9 @@ import java.util.List;
 
 public interface FileInfoDao {
     /**
-     * 根据用户名查找他的文件
+     * 根据用户名和父文件夹查找他的文件
      * @param filePrams
+     * userId,parentId
      * @return
      */
     List<FileInfo> queryFile(FilePrams filePrams);
@@ -30,11 +31,25 @@ public interface FileInfoDao {
     void insertInfo(FileInfo fileInfo);
 
     /**
+     * 批量插入文件信息
+     * @param fileInfoList
+     */
+    void insertFiles(List<FileInfo> fileInfoList);
+
+    /**
      * 根据Id查找文件
      * @param
      * @return
      */
     List<FileInfo> queryById(FilePrams filePrams);
+
+    /**
+     * 根据ID列表查找文件
+     * @param filePrams
+     * @param fileIdList
+     * @return
+     */
+    List<FileInfo> queryByIdList(@Param("filePrams")FilePrams filePrams,@Param("fileIdList")List<String> fileIdList);
 
     /**
      * 根据文件唯一标识码查找是否重复

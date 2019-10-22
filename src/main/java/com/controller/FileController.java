@@ -73,9 +73,11 @@ public class FileController {
             dataResult.setStatus(false);
             return dataResult;
         }
+        String currentFolderId = request.getParameter("currentFolderId");
         FilePrams filePrams=new FilePrams(user.getUserId());
+        filePrams.setFolderId(currentFolderId);
         List<FileInfo> fileList = fileInfoDao.queryFile(filePrams);
-        List<FolderInfo> folderList=folderInfoDao.queryFolder(filePrams);
+        List<FolderInfo> folderList=folderInfoDao.queryChildrenFolder(filePrams);
         Map<String,Object> data=new HashMap<>();
         data.put("fileList",fileList);
         data.put("folderList",folderList);
@@ -214,9 +216,8 @@ public class FileController {
         Map<String, String[]> map = request.getParameterMap();
         //将Map转换为List集合
         List<String> fileIdList = new ArrayList<>(Arrays.asList(map.get("fileId")));
-        filePrams.setFileIdList(fileIdList);
         //根据fileId查找文件名,并返回集合 注:不是真实路径
-        List<FileInfo> fileList=fileInfoDao.queryById(filePrams);
+        List<FileInfo> fileList=fileInfoDao.queryByIdList(filePrams,fileIdList);
         //判断如果是一个文件,就不压缩,直接下载
         if(fileList.size()==1){
             down(fileList.get(0).getFileKey(),request,response);

@@ -15,24 +15,33 @@ public interface FolderInfoDao {
     void creatFolder(FolderInfo folderInfo);
 
     /**
-     * 插入文件夹信息
+     * 批量插入文件夹信息
      * @param folderInfoList
      */
-    void insertFolder(List<FolderInfo> folderInfoList);
+    void insertFolders(@Param("folderInfoList") List<FolderInfo> folderInfoList);
+
 
     /**
-     * 根据文件夹ID查其子信息
+     * 根据文件夹ID查其子文件夹信息
      * @param filePrams
      * @return
      */
-    List<FolderInfo> queryFolder(FilePrams filePrams);
+    List<FolderInfo> queryChildrenFolder(FilePrams filePrams);
 
     /**
      * 根据ID查询文件夹信息
+     * @param filePrams
+     * @return
+     */
+    FolderInfo queryFolderById(FilePrams filePrams);
+
+    /**
+     * 根据ID列表查询文件夹信息
+     * @param filePrams
      * @param folderIdList
      * @return
      */
-    List<FolderInfo> queryFolderById(@Param("filePrams")FilePrams filePrams,@Param("folderIdList")List<String> folderIdList);
+    List<FolderInfo> queryFolderByIdList(@Param("filePrams")FilePrams filePrams,@Param("folderIdList")List<String> folderIdList);
 
     /**
      * 查找用户在回收站的所有文件夹

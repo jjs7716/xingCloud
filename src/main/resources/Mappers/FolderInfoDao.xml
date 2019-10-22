@@ -22,13 +22,14 @@
         insert into folderinfo (folder_id, folder_name, folder_uid, update_time, parent_id ,parent_name, delete_day, folder_state)
         values(#{folderId},#{folderName},#{folderUid},#{updateTime},#{parentId},#{parentName},#{deleteDay},#{folderState})
     </insert>
-
-    <insert id="insertFolder">
+<!--批量插入文件夹-->
+    <insert id="insertFolders">
         insert into folderinfo (folder_id, folder_name, folder_uid, update_time, parent_id ,parent_name, delete_day, folder_state)
         values
-        <foreach collection="folderInfoList"  item="folderInfo" index="index" open="(" separator="," close=")">
-            (#{folderinfo.folderId},#{folderinfo.folderName},#{folderinfo.folderUid},#{folderinfo.updateTime},#{folderinfo.parentId},#{folderinfo.parentName},#{folderinfo.deleteDay},#{folderinfo.folderState})
+        <foreach item="folderInfo" collection="folderInfoList" index="index" separator=",">
+            (#{folderInfo.folderId},#{folderInfo.folderName},#{folderInfo.folderUid},#{folderInfo.updateTime},#{folderInfo.parentId},#{folderInfo.parentName},#{folderInfo.deleteDay},#{folderInfo.folderState})
         </foreach>
+
     </insert>
 <!--彻底删除-->
     <delete id="deleteFolder">
@@ -38,8 +39,9 @@
         </foreach>
     </delete>
 
-<!--根据文件夹ID查其子信息-->
-    <select id="queryFolder" resultMap="folderMap">
+
+<!--根据文件夹ID查其子文件夹信息-->
+    <select id="queryChildrenFolder" resultMap="folderMap">
         select * from folderinfo where folder_uid=#{userId} and folder_state = 0
         <choose>
             <when test="folderId != null">
@@ -58,20 +60,36 @@
     </select>
 <!--查找回收站的文件夹-->
     <select id="queryFolderByRecycle" resultMap="folderMap">
-        select * from folderinfo where folder_uid=#{userId} and folder_state = 1 and parent_id="";
+        select * from folderinfo where folder_uid=#{userId} and folder_state = 1;
     </select>
-<!--根据文件夹ID查文件夹信息-->
+
+    <!--根据文件夹ID查文件夹信息-->
     <select id="queryFolderById" resultMap="folderMap">
-        select * from folderinfo where folder_uid=#{filePrams.userId} and folder_state = 0 and folder_id in
-        <foreach collection="folderIdList"  item="folderId" index="index" open="(" separator="," close=")">
+        select * from folderinfo where
+        <if test="userId !=null">
+            folder_uid=#{userId} and
+        </if>
+      folder_state = 0 and folder_id =
             <choose>
                 <when test="folderId != null">
-                     #{folderId}
+                    #{folderId}
                 </when>
                 <otherwise>
                     ""
                 </otherwise>
             </choose>
+        order by folder_name;
+    </select>
+
+    <!--根据文件夹ID列表查文件夹信息-->
+    <select id="queryFolderByIdList" resultMap="folderMap">
+        select * from folderinfo where
+         <if test="filePrams.userId !=null">
+             folder_uid=#{filePrams.userId} and
+         </if>
+         folder_state = 0 and folder_id in
+        <foreach collection="folderIdList"  item="folderId" index="index" open="(" separator="," close=")">
+            #{folderId}
         </foreach>
         order by folder_name;
     </select>
@@ -81,7 +99,10 @@
     </update>
 <!--移动文件夹-->
     <update id="moveFolder">
-
+        update folderinfo set parent_name=#{targetName},parent_id=#{targetId} where folder_id in
+        <foreach item="folderId" index="index" collection="folderIdList" open="(" separator="," close=")">
+            #{folderId}
+        </foreach>
     </update>
 <!--移动文件-->
     <update id="moveFile">

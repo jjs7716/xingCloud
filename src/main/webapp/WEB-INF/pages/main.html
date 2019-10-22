@@ -133,17 +133,23 @@
     var pathUrl = encodeURI(window.location.protocol+"//"+ window.location.host+"/"+secondLevelLocation);
     var username=$.cookie("cookieUsername");
     var userId=$.cookie("cookieUserId");
+    var currentFolderId;
+    var currentFolderName;
 
     $(document).ready(function () {
         $("#nickname").text(username);
-        main();
+        main(currentFolderId);
     });
 
     //执行主方法
-    function main() {
+    function main(currentFolderId) {
+        if(currentFolderId==null){
+            currentFolderId="";
+        }
         $.ajax({
             url: pathUrl + "/file/main",
-            contentType: 'application/json; charset=UTF-8',
+            data:{"currentFolderId":currentFolderId},
+            // contentType: 'application/json; charset=UTF-8',
             dataType: "json",
             type: "post",
             success: function (result) {
@@ -296,7 +302,8 @@
             "newFileName":newFileName
         },
             function(data,status){
-                main();
+                console.log(currentFolderId);
+                main(currentFolderId);
         })
     }
 
@@ -314,11 +321,12 @@
     var label=0;
     // 新建文件夹
     function creatFolder() {
+        console.log(folderList);
         var oldName="新建文件夹";
         // 标记，创建文件夹后是否点确认，没有则禁止继续创建
         if(label!=1){
             let folderId=md5(new Date().getMilliseconds());
-        console.log(folderId);
+            console.log("新建"+folderId)
         $("#tbody").prepend("        <tr id=\"tr"+folderId+"\">\n" +
             "            <td>\n" +
             "                <input type=\"checkbox\"  value="+folderId+" >\n" +
@@ -350,6 +358,7 @@
 
     //确认创建文件夹
     function confirmFolderName(folderId) {
+        console.log(folderList);
         var folderName=$("#"+folderId).val();
         var cache=folderName;
         for (let i = 0; i < folderList.length; i++) {
@@ -362,10 +371,12 @@
         $.post(pathUrl+"/folder/creatFolder",
             {
                 "folderId":folderId,
-                "folderName":folderName
+                "folderName":folderName,
+                "currentFolderId":currentFolderId,
+                "currentFolderName":currentFolderName
             },
             function(data,status){
-                main();
+                main(currentFolderId);
                 label=0;
             });
     }
@@ -384,7 +395,11 @@
                 "folderId":folderId
             },
             function(result){
-                creatMainList(result.data.folderList,result.data.fileList);
+                currentFolderId=folderId;
+                currentFolderName=result.data.currentFolderName;
+                folderList=result.data.folderList;
+                fileList=result.data.fileList;
+                creatMainList(folderList,fileList);
                 let nameList=result.data.nameList;
                 let idList=result.data.idList;
                 let idLength=idList.length;
@@ -395,6 +410,8 @@
                     backFolder="";
                     backName="全部文件";
                 }
+                console.log(currentFolderId);
+                console.log(currentFolderName);
                 $("#dir").text("");
                 $("#dir").append("<a href='javascript:void(0);' onclick='folder(&quot;"+backFolder+"&quot;)'>返回上一层</a>|");
                 for (let i = 0; i < idLength; i++) {
@@ -428,8 +445,6 @@
         }
         $(e).closest("tr").find(":checkbox").attr("checked","checked");
         getList("select");
-        console.log(folderIdList);
-        console.log(fileIdList);
         $('#myModal').modal();
     }
 
@@ -476,15 +491,14 @@
         }];
         return data;
     }
-
     $('#tree').treeview({
         data: getTree(),
         levels: 1,
     });
-
     // $('#tree').treeview('expandNode', [ " ", { levels: 1, silent: true } ]);
     //展开
     $('#tree').on('nodeExpanded',function (event, node){
+        console.log(node.id);
         if(node.nodes.length!=0){
             return
         }
@@ -498,28 +512,17 @@
         targetId=node.id;
         targetName=node.text;
     });
-
     function confirmSelectFolder() {
-        // let moveFilePrams=[];
-        // moveFilePrams.fileIdList=fileIdList;
-        // moveFilePrams.folderIdList=folderIdList;
-        // moveFilePrams.targetId=targetId;
-        // moveFilePrams.selectType=selectType;
-        // if(folderIdList.length==0){
-        //     folderIdList=[""];
-        // }
-        // if(fileIdList==0){
-        //     fileIdList=[""];
-        // }
+        $('#myModal').modal('hide');
         let json={"fileIdList":fileIdList,"folderIdList":folderIdList,"targetId":targetId,"targetName":targetName,"selectType":selectType};
-        console.log(json);
-        console.log(JSON.stringify(json));
         $.ajax({
             url: pathUrl+"/folder/moveOrCopy",
             data:JSON.stringify(json),
             contentType: 'application/json; charset=UTF-8',
             type: "post",
+            dataType:"text",
             success: function (result) {
+                main(currentFolderId);
                 console.log("success")
             }
         }

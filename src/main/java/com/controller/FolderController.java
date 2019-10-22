@@ -42,12 +42,19 @@ public class FolderController {
         FolderInfo folderInfo=new FolderInfo();
         String folderId = request.getParameter("folderId");
         String folderName = request.getParameter("folderName");
-        User user = (User) request.getSession().getAttribute("user");
-        String userId=user.getUserId();
+        String currentFolderId = request.getParameter("currentFolderId");
+        String currentFolderName = request.getParameter("currentFolderName");
+        if(currentFolderId==null){
+            currentFolderId="";
+            currentFolderName="";
+        }
+        String userId = BaseUtil.getUserId(request);
         folderInfo.setFolderId(folderId);
         folderInfo.setFolderName(folderName);
         folderInfo.setFolderUid(userId);
         folderInfo.setUpdateTime(DateUtil.nowDate());
+        folderInfo.setParentId(currentFolderId);
+        folderInfo.setParentName(currentFolderName);
         folderInfoDao.creatFolder(folderInfo);
         return "success";
     }
@@ -77,10 +84,17 @@ public class FolderController {
         FilePrams filePrams=new FilePrams(userId);
         filePrams.setFolderId(folderId);
         Map<String,Object> data=new HashMap<>();
-        List<FolderInfo> folderList=folderInfoDao.queryFolder(filePrams);
+        List<FolderInfo> folderList=folderInfoDao.queryChildrenFolder(filePrams);
+        FolderInfo folderInfo = folderInfoDao.queryFolderById(filePrams);
+        String currentFolderName;
+        if(folderInfo==null){
+            currentFolderName="";
+        }else{
+            currentFolderName=folderInfo.getFolderName();
+        }
         //判断是否为移动或复制文件遍历目录树
         if(selectFolder!=null){
-            folderInfoDao.queryFolder(filePrams,folderList);
+            folderInfoDao.queryIsEmptyFolder(filePrams,folderList);
         }else{
             List<FileInfo> fileList = fileInfoDao.queryFile(filePrams);
             List<String> nameList=new ArrayList<>();
@@ -89,6 +103,7 @@ public class FolderController {
             data.put("nameList",nameList);
             data.put("idList",idList);
             data.put("fileList",fileList);
+            data.put("currentFolderName",currentFolderName);
         }
         data.put("folderList",folderList);
         dataResult.setData(data);
@@ -106,7 +121,7 @@ public class FolderController {
         DataResult dataResult=new DataResult();
         Map<String,Object> data=new HashMap<>();
         FilePrams filePrams=new FilePrams();
-        filePrams.setUserId(((User)request.getSession().getAttribute("user")).getUserId());
+        filePrams.setUserId(BaseUtil.getUserId(request));
         folderInfoDao.getFolderInfoList(filePrams,data);
         dataResult.setData(data);
         return dataResult;
@@ -133,13 +148,21 @@ public class FolderController {
     }
 
     private void copy(MoveFilePrams moveFilePrams){
-        folderInfoDao.copyFolder(moveFilePrams);
-        folderInfoDao.copyFile(moveFilePrams);
+        if(!moveFilePrams.getFolderIdList().isEmpty()){
+            folderInfoDao.copyFolder(moveFilePrams);
+        }
+        if(!moveFilePrams.getFileIdList().isEmpty()){
+            folderInfoDao.copyFile(moveFilePrams);
+        }
     }
 
     private void move(MoveFilePrams moveFilePrams){
-        folderInfoDao.moveFolder(moveFilePrams);
-        folderInfoDao.moveFile(moveFilePrams);
+        if(!moveFilePrams.getFolderIdList().isEmpty()){
+            folderInfoDao.moveFolder(moveFilePrams);
+        }
+        if(!moveFilePrams.getFileIdList().isEmpty()){
+            folderInfoDao.moveFile(moveFilePrams);
+        }
     }
 //    /**
 //     * 恢复文件夹及其包含的所有文件
