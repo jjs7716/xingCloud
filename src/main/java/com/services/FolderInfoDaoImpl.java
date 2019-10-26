@@ -69,29 +69,43 @@ public class FolderInfoDaoImpl implements FolderInfoDao {
         String targetId = moveFilePrams.getTargetId();
         //目标文件夹名
         String targetName = moveFilePrams.getTargetName();
-        //获取要复制的文件夹ID列表
+        //更换第一级文件夹和文件的父文件夹信息
         List<String> folderIdList = moveFilePrams.getFolderIdList();
+        List<String> fileIdList = moveFilePrams.getFileIdList();
         List<FolderInfo> folderInfos = queryFolderByIdList(filePrams, folderIdList);
+        List<FileInfo> fileInfos = fileInfoDao.queryByIdList(filePrams, fileIdList);
         for (FolderInfo folderInfo : folderInfos) {
             folderInfo.setParentId(targetId);
             folderInfo.setParentName(targetName);
             folderInfo.setFolderId(XingUtils.getUUID());
         }
+        for (FileInfo fileInfo : fileInfos) {
+            fileInfo.setParentId(targetId);
+            fileInfo.setParentId(targetName);
+            fileInfo.setFileId(XingUtils.getUUID());
+        }
         //获取文件夹内所有的文件夹信息,包含子文件夹
-        List<FolderInfo> folderInfoList = getFolderInfoList(filePrams);
+        //folderInfoList为文件夹所有的子文件夹信息
+        List<FolderInfo> folderInfoList=new ArrayList<>() ;
+        for (String folderId : folderIdList) {
+            filePrams.setFolderId(folderId);
+            folderInfoList.addAll(getFolderInfoList(filePrams));
+        }
+        //所有文件的信息
         List<FileInfo> fileInfoList=new ArrayList<>();
         Map<String,String> folderIdMap=new HashMap<>();
-        Map<String,String> fileIdMap=new HashMap<>();
         for (FolderInfo folderInfo : folderInfoList) {
             String folderId = folderInfo.getFolderId();
             String newFolderId=XingUtils.getUUID();
+            //将文件夹旧ID和新生成的ID一一对应放到map里
             folderIdMap.put(folderId,newFolderId);
             filePrams.setFolderId(folderId);
             folderInfo.setFolderId(newFolderId);
-            //根据每个文件夹的id查询每个文件夹的文件信息
-            List<FileInfo> fileInfos = fileInfoDao.queryFile(filePrams);
-            fileInfoList.addAll(fileInfos);
+            //根据每个文件夹的ID查询每个文件夹的文件信息
+            List<FileInfo> fileInfos1 = fileInfoDao.queryFile(filePrams);
+            fileInfoList.addAll(fileInfos1);
         }
+        //更换folder的parentId
         List<String> oldFolderIdList=new ArrayList<>(folderIdMap.keySet());
         for (FolderInfo folderInfo : folderInfoList) {
             for (String oldId : oldFolderIdList) {
@@ -100,20 +114,23 @@ public class FolderInfoDaoImpl implements FolderInfoDao {
                 }
             }
         }
+        //遍历所有文件信息列表,生成新的文件ID,并设置新的parentId
         for (FileInfo fileInfo : fileInfoList) {
-            String fileId=fileInfo.getFileId();
-            String newFileId=XingUtils.getUUID();
-            fileIdMap.put(fileId,newFileId);
-            fileInfo.setFileId(newFileId);
-        }
-        List<String> oldFileIdList=new ArrayList<>(fileIdMap.keySet());
-        for (FileInfo fileInfo : fileInfoList) {
-            for (String oldId : oldFileIdList) {
+            for (String oldId : oldFolderIdList) {
                 if(fileInfo.getParentId().equals(oldId)){
-                    fileInfo.setParentId(fileIdMap.get(oldId));
+                    fileInfo.setParentId(folderIdMap.get(oldId));
                 }
             }
+            fileInfo.setFileId(XingUtils.getUUID());
         }
+//        List<String> oldFileIdList=new ArrayList<>(folderIdMap.keySet());
+//        for (FileInfo fileInfo : fileInfoList) {
+//            for (String oldId : oldFolderIdList) {
+//                if(fileInfo.getParentId().equals(oldId)){
+//                    fileInfo.setParentId(fileIdMap.get(oldId));
+//                }
+//            }
+//        }
         insertFolders(folderInfos);
         if(!folderInfoList.isEmpty()){
             insertFolders(folderInfoList);

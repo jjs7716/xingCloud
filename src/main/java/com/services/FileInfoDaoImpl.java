@@ -47,6 +47,11 @@ public class FileInfoDaoImpl implements FileInfoDao {
     }
 
     @Override
+    public List<FileInfo> queryFileByFolderIdList(FilePrams filePrams, List<String> folderIdList) {
+        return fileInfoDao.queryFileByFolderIdList(filePrams,folderIdList);
+    }
+
+    @Override
     public List<String> queryByFileKey(String fileKey) {
        return fileInfoDao.queryByFileKey(fileKey);
     }

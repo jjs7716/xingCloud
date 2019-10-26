@@ -205,5 +205,12 @@
     </select>
 
 
+    <select id="queryFileByFolderIdList" resultMap="fileMap">
+        select * from fileinfo where file_uid=#{userId} and parent_id in
+        <foreach collection="folderIdList"  item="folderId" index="index" open="(" separator="," close=")">
+            #{folderId}
+        </foreach>
+    </select>
+
 </mapper>
 

@@ -37,19 +37,27 @@ public interface FileInfoDao {
     void insertFiles(List<FileInfo> fileInfoList);
 
     /**
-     * 根据Id查找文件
+     * 根据文件Id查找文件
      * @param
      * @return
      */
     List<FileInfo> queryById(FilePrams filePrams);
 
     /**
-     * 根据ID列表查找文件
+     * 根据文件ID列表查找文件
      * @param filePrams
      * @param fileIdList
      * @return
      */
     List<FileInfo> queryByIdList(@Param("filePrams")FilePrams filePrams,@Param("fileIdList")List<String> fileIdList);
+
+    /**
+     * 根据文件夹ID列表查找文件信息
+     * @param filePrams
+     * @param folderIdList
+     * @return
+     */
+    List<FileInfo> queryFileByFolderIdList(@Param("filePrams")FilePrams filePrams,@Param("folderIdList")List<String> folderIdList);
 
     /**
      * 根据文件唯一标识码查找是否重复

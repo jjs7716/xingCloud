@@ -127,7 +127,7 @@ public class test {
         folderIdList.add("210f760a89db30aa72ca258a3483cc7f");
 //        folderController.getFolderName(filePrams,data1);
 //        folderController.getFolderName(filePrams,data2,folderIdList);
-        List<FolderInfo> folderInfoList = folderInfoDao.getFolderInfoList(filePrams,new HashMap<>());
+        List<FolderInfo> folderInfoList = folderInfoDao.getFolderInfoList(filePrams);
 //        for (FolderInfo folderInfo : folderInfoList) {
 //            System.out.println(folderInfo);
 //        }
@@ -150,17 +150,24 @@ public class test {
     @Test
     public void test6(){
         FilePrams filePrams=new FilePrams();
-        filePrams.setUserId("d4e2e762de5eb3232441447cadee4d4e");
+        MoveFilePrams moveFilePrams=new MoveFilePrams();
+//        filePrams.setUserId("d4e2e762de5eb3232441447cadee4d4e");
+//        filePrams.setFolderId("210f760a89db30aa72ca258a3483cc7f");
         List<String> folderIdList=new ArrayList<>();
-//        folderIdList.add("428fca9bc1921c25c5121f9da7815cde");
+        folderIdList.add("6a10bbd480e4c5573d8f3af73ae0454b");
         folderIdList.add("210f760a89db30aa72ca258a3483cc7f");
 //        filePrams.setFolderIdList(folderIdList);
-        filePrams.setFolderId("210f760a89db30aa72ca258a3483cc7f");
+//        moveFilePrams.setFolderIdList(folderIdList);
+//        moveFilePrams.setUserId("d4e2e762de5eb3232441447cadee4d4e");
+//        folderInfoDao.copyFolder(moveFilePrams);
+//        filePrams.setFolderId("210f760a89db30aa72ca258a3483cc7f");
+
         Map<String,Object> data=new HashMap<>();
         List<FolderInfo> folderInfoList=new ArrayList<>();
-        folderInfoDao.getFolder(filePrams,data,folderInfoList);
-        System.out.println(data);
-        System.out.println(folderInfoList);
+        List<FolderInfo> folderInfoList1 = folderInfoDao.queryFolderByIdList(filePrams, folderIdList);
+//        folderInfoDao.getFolder(filePrams,data,folderInfoList);
+//        System.out.println(data);
+//        System.out.println(folderInfoList);
     }
 
 
