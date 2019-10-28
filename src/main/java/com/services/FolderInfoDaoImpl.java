@@ -74,6 +74,8 @@ public class FolderInfoDaoImpl implements FolderInfoDao {
         List<String> fileIdList = moveFilePrams.getFileIdList();
         List<FolderInfo> folderInfos = queryFolderByIdList(filePrams, folderIdList);
         List<FileInfo> fileInfos = fileInfoDao.queryByIdList(filePrams, fileIdList);
+        List<FolderInfo> folderInfoList = new ArrayList<>(folderInfos);
+        List<FileInfo> fileInfoList=new ArrayList<>();
         for (FolderInfo folderInfo : folderInfos) {
             folderInfo.setParentId(targetId);
             folderInfo.setParentName(targetName);
@@ -81,18 +83,16 @@ public class FolderInfoDaoImpl implements FolderInfoDao {
         }
         for (FileInfo fileInfo : fileInfos) {
             fileInfo.setParentId(targetId);
-            fileInfo.setParentId(targetName);
+            fileInfo.setParentName(targetName);
             fileInfo.setFileId(XingUtils.getUUID());
         }
         //获取文件夹内所有的文件夹信息,包含子文件夹
         //folderInfoList为文件夹所有的子文件夹信息
-        List<FolderInfo> folderInfoList=new ArrayList<>() ;
         for (String folderId : folderIdList) {
             filePrams.setFolderId(folderId);
             folderInfoList.addAll(getFolderInfoList(filePrams));
         }
         //所有文件的信息
-        List<FileInfo> fileInfoList=new ArrayList<>();
         Map<String,String> folderIdMap=new HashMap<>();
         for (FolderInfo folderInfo : folderInfoList) {
             String folderId = folderInfo.getFolderId();
@@ -131,13 +131,13 @@ public class FolderInfoDaoImpl implements FolderInfoDao {
 //                }
 //            }
 //        }
-        insertFolders(folderInfos);
-        if(!folderInfoList.isEmpty()){
-            insertFolders(folderInfoList);
-        }
-        if(!fileInfoList.isEmpty()){
-            fileInfoDao.insertFiles(fileInfoList);
-        }
+//        insertFolders(folderInfos);
+//        if(!folderInfoList.isEmpty()){
+//            insertFolders(folderInfoList);
+//        }
+//        if(!fileInfoList.isEmpty()){
+//            fileInfoDao.insertFiles(fileInfoList);
+//        }
     }
 
     @Override

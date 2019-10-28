@@ -151,7 +151,7 @@
     <select id="queryByIdList" resultMap="fileMap">
         select * from fileinfo where
         <if test="filePrams.userId !=null">
-            file_uid=#{userId} and
+            file_uid=#{filePrams.userId} and
         </if>
         file_state=0 and file_id in
         <foreach collection="fileIdList"  item="fileId" index="index" open="(" separator="," close=")">

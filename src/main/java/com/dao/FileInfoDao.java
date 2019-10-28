@@ -34,7 +34,7 @@ public interface FileInfoDao {
      * 批量插入文件信息
      * @param fileInfoList
      */
-    void insertFiles(List<FileInfo> fileInfoList);
+    void insertFiles(@Param("fileInfoList")List<FileInfo> fileInfoList);
 
     /**
      * 根据文件Id查找文件
