@@ -69,31 +69,26 @@ public class FolderInfoDaoImpl implements FolderInfoDao {
         String targetId = moveFilePrams.getTargetId();
         //目标文件夹名
         String targetName = moveFilePrams.getTargetName();
-        //更换第一级文件夹和文件的父文件夹信息
+        //获取第一级文件夹的ID
         List<String> folderIdList = moveFilePrams.getFolderIdList();
-        List<String> fileIdList = moveFilePrams.getFileIdList();
+        //获得第一级文件夹的信息
         List<FolderInfo> folderInfos = queryFolderByIdList(filePrams, folderIdList);
-        List<FileInfo> fileInfos = fileInfoDao.queryByIdList(filePrams, fileIdList);
+        //folderInfoList是包含第一级文件夹的所有文件夹信息列表,folderInfos仅仅是第一级文件夹的信息
         List<FolderInfo> folderInfoList = new ArrayList<>(folderInfos);
         List<FileInfo> fileInfoList=new ArrayList<>();
+        //设置第一级新的parentId和folderId,不能在循环里
         for (FolderInfo folderInfo : folderInfos) {
             folderInfo.setParentId(targetId);
             folderInfo.setParentName(targetName);
-            folderInfo.setFolderId(XingUtils.getUUID());
-        }
-        for (FileInfo fileInfo : fileInfos) {
-            fileInfo.setParentId(targetId);
-            fileInfo.setParentName(targetName);
-            fileInfo.setFileId(XingUtils.getUUID());
         }
         //获取文件夹内所有的文件夹信息,包含子文件夹
-        //folderInfoList为文件夹所有的子文件夹信息
         for (String folderId : folderIdList) {
             filePrams.setFolderId(folderId);
             folderInfoList.addAll(getFolderInfoList(filePrams));
         }
-        //所有文件的信息
-        Map<String,String> folderIdMap=new HashMap<>();
+        //新建一个新旧ID对应的map集合
+        Map<String,String> folderIdMap=new HashMap<>(folderInfoList.size());
+        //获得所有文件的信息
         for (FolderInfo folderInfo : folderInfoList) {
             String folderId = folderInfo.getFolderId();
             String newFolderId=XingUtils.getUUID();
@@ -123,21 +118,11 @@ public class FolderInfoDaoImpl implements FolderInfoDao {
             }
             fileInfo.setFileId(XingUtils.getUUID());
         }
-//        List<String> oldFileIdList=new ArrayList<>(folderIdMap.keySet());
-//        for (FileInfo fileInfo : fileInfoList) {
-//            for (String oldId : oldFolderIdList) {
-//                if(fileInfo.getParentId().equals(oldId)){
-//                    fileInfo.setParentId(fileIdMap.get(oldId));
-//                }
-//            }
-//        }
-//        insertFolders(folderInfos);
-//        if(!folderInfoList.isEmpty()){
-//            insertFolders(folderInfoList);
-//        }
-//        if(!fileInfoList.isEmpty()){
-//            fileInfoDao.insertFiles(fileInfoList);
-//        }
+
+        insertFolders(folderInfoList);
+        if(!fileInfoList.isEmpty()){
+            fileInfoDao.insertFiles(fileInfoList);
+        }
     }
 
     @Override
