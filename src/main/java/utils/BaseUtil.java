@@ -10,7 +10,13 @@ public class BaseUtil {
     public static String IMG_FOLDER_NAME="img";
     public static String DEFAULT_DELETE_TIME="2099-01-01 00:00:00";
     public static int DEFAULT_DELETE_DAY=99999;
+    /**
+     * 根据系统属性获得用户主目录
+     */
     private static String userHome = System.getProperties().getProperty("user.home");
+    /**
+     * 根据系统属性获得路径间隔符
+     */
     private static String property = System.getProperty("file.separator");
     /**
      * 头像文件夹

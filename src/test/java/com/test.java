@@ -73,20 +73,8 @@ public class test {
     }
     @Test
     public void test2()  {
-        String username;
-        String password;
-        for (int i = 0; i <50; i++) {
-            User user=new User();
-            username=XingUtils.getRandomString(8);
-            List<User> users = userDaoImpl.checkUsername(username);
-            if(users.size()>=1){
-                continue;
-            }
-            password=XingUtils.getRandomString(12);
-            user.setUsername(username);
-            user.setPassword(password);
-            userDaoImpl.insert(user);
-        }
+        String property = System.getProperty("os.name");
+        System.out.println(property);
     }
 
 

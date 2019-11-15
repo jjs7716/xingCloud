@@ -39,7 +39,7 @@ public class CaptchaUtil {
         //将图像填充为白色
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, width, height);
-        //创建字体，字体的大小应该根据图片的高度来定。
+        //创建字体，字体的大小应该根据图片的高度来定。字体为/static/fonts/SVGAFIX.FON  Linux需要安装此字体
         Font font = new Font("Fixedsys", Font.PLAIN, fontHeight-5);
         //设置字体。
         g.setFont(font);
