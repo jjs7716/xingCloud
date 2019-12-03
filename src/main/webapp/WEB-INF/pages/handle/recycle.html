@@ -7,6 +7,7 @@
     <script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script async="false" src="static/js/creatFile.js" type="text/javascript" charset="utf-8"></script>
+    <script async="false" src="static/js/pathUrl.js"></script>
     <style>
         #title{
             width: 100%;
@@ -85,11 +86,6 @@
 </div>
 </body>
 <script>
-    var pathArray = window.location.pathname.split('/');
-    var secondLevelLocation = pathArray[1];
-    var pathUrl = encodeURI(window.location.protocol+"//"+ window.location.host+"/"+secondLevelLocation);
-    var username=$.cookie("cookieUsername");
-    var userId=$.cookie("cookieUserId");
 
     $(document).ready(function () {
         $("#nickname").text(username);

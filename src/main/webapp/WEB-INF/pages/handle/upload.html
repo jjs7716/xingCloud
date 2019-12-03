@@ -6,6 +6,7 @@
     <script src="static/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script async="false" src="static/js/pathUrl.js"></script>
 
     <script>
         function getFile(){
@@ -94,11 +95,6 @@
         </tbody>
     </table>
     <script>
-        var pathArray = window.location.pathname.split('/');
-        var secondLevelLocation = pathArray[1];
-        var pathUrl = encodeURI(window.location.protocol+"//"+ window.location.host+"/"+secondLevelLocation);
-        var username=$.cookie("cookieUsername");
-        var userId=$.cookie("cookieUserId");
         var fd = new FormData();
         //获取文件框ID
         var inputs = document.getElementById("getFile");

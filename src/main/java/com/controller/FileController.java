@@ -1,5 +1,8 @@
 package com.controller;
 
+import com.dao.DiskFileDao;
+import com.dao.FileInfoDao;
+import com.dao.FolderInfoDao;
 import com.domain.*;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,16 +50,16 @@ public class FileController {
 
 
     @Autowired
-    private FileInfoDaoImpl fileInfoDao;
+    private FileInfoDao fileInfoDao;
 
     @Autowired
     private Format format;
 
     @Autowired
-    private DiskFileDaoImpl diskFileDao;
+    private DiskFileDao diskFileDao;
 
     @Autowired
-    private FolderInfoDaoImpl folderInfoDao;
+    private FolderInfoDao folderInfoDao;
 
     @Autowired
     private ObjectMapper mapper;
@@ -67,11 +70,9 @@ public class FileController {
      */
     @RequestMapping(path = "/main")
     public DataResult main(HttpServletRequest request) {
-        DataResult dataResult=new DataResult();
         User user= BaseUtil.getUser(request);
         if(user==null){
-            dataResult.setStatus(false);
-            return dataResult;
+            return DataResult.fail();
         }
         String currentFolderId = request.getParameter("currentFolderId");
         FilePrams filePrams=new FilePrams(user.getUserId());
@@ -82,9 +83,7 @@ public class FileController {
         data.put("fileList",fileList);
         data.put("folderList",folderList);
         request.getSession().removeAttribute("searchName");
-        dataResult.setData(data);
-        dataResult.setStatus(true);
-        return dataResult;
+        return DataResult.success(data);
     }
 
     /**
@@ -97,8 +96,8 @@ public class FileController {
         //强转使用AJAX来获取,传统MultipartFile获取不到
         MultipartHttpServletRequest ms= (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = ms.getFileMap();
-        Collection<MultipartFile> values = fileMap.values();
-        if(values.size()==0){
+//        Collection<MultipartFile> values = fileMap.values();
+        if(fileMap.size()==0){
             return "handle/upload";
         }
         //获取文件夹的真实路径
@@ -136,6 +135,7 @@ public class FileController {
             try {
                 //根据md5判断服务器上是否有重复的文件
                 if(diskFileDao.queryCateCount(fileKey)==null){
+                    //上传文件的主方法
                     value.transferTo(new File(path,fileKey));
                     //第一次上传,保存上传信息
                     diskFile.setFileKey(fileKey);

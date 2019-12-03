@@ -11,6 +11,13 @@
     <param-name>contextConfigLocation</param-name>
     <param-value>classpath:ApplicationContext.xml</param-value>
   </context-param>
+  <context-param>
+
+    <param-name>spring.profiles.active</param-name>
+
+    <param-value>development</param-value>
+
+  </context-param>
   <!--  配置乱码过滤器-->
   <filter>
     <filter-name>characterEncodingFilter</filter-name>

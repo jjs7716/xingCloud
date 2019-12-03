@@ -7,35 +7,47 @@
   <link rel="stylesheet" type="text/css" href="static/css/bootstrap.min.css" />
   <script src="static/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
   <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+  <script async="false" src="static/js/pathUrl.js"></script>
   <script>
-      var pathArray = window.location.pathname.split('/');
-      var secondLevelLocation = pathArray[1];
-      var pathUrl = window.location.protocol+"//"+ window.location.host+"/"+secondLevelLocation;
     $(document).ready(function() {
-          $("#change").attr("src","code");
-          $("#change").click(function () {
-            changeCode();
+      $("#change").attr("src","code");
+      $("#change").click(function(){
+        changeCode();
       });
-      $("#login").click(function () {
-          var json={"username":$("#username").val(),"password":$("#password").val(),"loginCode":$("#loginCode").val()};
-          $.ajax({
-            url:pathUrl+"/login",
-            contentType: 'application/json; charset=UTF-8',
-            dataType:"json",
-            data:JSON.stringify(json),
-            type:"post",
-            success:function(result){
-                if(result.status==true){
-                  $.cookie("cookieUsername",result.data.user.username,{ expires: 7 });
-                  $.cookie("cookieUserId",result.data.user.userId,{ expires: 7 });
-                  window.location.href=pathUrl+"/transfer?transfer=main";
-                }else{
-                  changeCode();
-                  $("#error").text(result.msg);
-                }
-              }
+      $("#login").click(function(){
+        login();
       });
-    });
+
+      function login(){
+        var json={
+          "username":$("#username").val(),
+          "password":$("#password").val(),
+          "loginCode":$("#loginCode").val()
+        };
+        $.ajax({
+          url:pathUrl+"/login",
+          contentType: 'application/json; charset=UTF-8',
+          dataType:"json",
+          data:JSON.stringify(json),
+          type:"post",
+          success:function(result){
+            console.log(result)
+            if(result.success==true){
+              $.cookie("cookieUsername",result.data.user.username,{ expires: 7 });
+              $.cookie("cookieUserId",result.data.user.userId,{ expires: 7 });
+              window.location.href=pathUrl+"/transfer?transfer=main";
+            }else{
+              changeCode();
+              $("#error").text(result.msg);
+            }
+          }
+        });
+      }
+      $(document).keyup(function(event){
+        if(event.keyCode ==13){
+          login();
+        }
+      });
       //更换验证码
       function changeCode() {
         $("#change").attr("src",pathUrl+"/code?time="+new Date().getTime());

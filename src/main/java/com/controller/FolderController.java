@@ -77,7 +77,6 @@ public class FolderController {
      */
     @RequestMapping(path = "/folder")
     public DataResult folder(HttpServletRequest request){
-        DataResult dataResult=new DataResult();
         String userId= ((User) request.getSession().getAttribute("user")).getUserId();
         String folderId = request.getParameter("folderId");
         String selectFolder=request.getParameter("selectFolder");
@@ -106,8 +105,7 @@ public class FolderController {
             data.put("currentFolderName",currentFolderName);
         }
         data.put("folderList",folderList);
-        dataResult.setData(data);
-        return dataResult;
+        return DataResult.success(data);
     }
 
 
@@ -118,13 +116,11 @@ public class FolderController {
      */
     @RequestMapping("selectFolder")
     public DataResult selectFolder(HttpServletRequest request){
-        DataResult dataResult=new DataResult();
         Map<String,Object> data=new HashMap<>();
         FilePrams filePrams=new FilePrams();
         filePrams.setUserId(BaseUtil.getUserId(request));
         folderInfoDao.getFolderInfoList(filePrams,data);
-        dataResult.setData(data);
-        return dataResult;
+        return DataResult.success(data);
     }
 
     /**

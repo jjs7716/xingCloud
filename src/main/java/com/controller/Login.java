@@ -43,9 +43,6 @@ public class Login {
     @Autowired
     private ObjectMapper mapper;
 
-    static private boolean SUCCESS=true;
-    static private boolean FAILURE=false;
-
     /**
      * 显示回收站已标记的用户文件
      * @param session
@@ -55,7 +52,6 @@ public class Login {
     @RequestMapping(path = "/recycle")
     @ResponseBody
     public DataResult recycle(HttpSession session){
-        DataResult dataResult=new DataResult();
         Map<String,Object> data=new HashMap<>();
 //        //声明回收站保存时间
 //        Integer saveDay=30;
@@ -66,9 +62,7 @@ public class Login {
         List<FolderInfo> folderList=folderInfoDao.queryFolderByRecycle(filePrams);
         data.put("fileList",fileList);
         data.put("folderList",folderList);
-        dataResult.setStatus(true);
-        dataResult.setData(data);
-        return dataResult;
+        return DataResult.success(data);
     }
 
     /**
@@ -81,8 +75,6 @@ public class Login {
     @RequestMapping(path = "/login")
     @ResponseBody
     public DataResult loginCheck(HttpServletRequest request,@RequestBody String json) throws IOException {
-        //结果集
-        DataResult dataResult=new DataResult();
         Map<String,Object> data=new HashMap<>();
         //调用jackson解析json并封装用户信息
         User user = mapper.readValue(json, User.class);
@@ -92,29 +84,22 @@ public class Login {
         String code = (String) request.getSession().getAttribute("loginCode");
         if(!code.equalsIgnoreCase(user.getLoginCode())){
             //验证码错误，返回错误信息
-            dataResult.setStatus(FAILURE);
-            dataResult.setMsg(error1);
-            return dataResult;
+            return DataResult.fail(error1);
         }
         List<User> users = userDao.checkUser(user);
         if(users.size()==0){
             //用户名或密码错误，返回错误信息
-            dataResult.setStatus(FAILURE);
-            dataResult.setMsg(error2);
-            return dataResult;
+            return DataResult.fail(error2);
         }
         else{
             user=users.get(0);
-            user.setPassword("");
-            user.setStrPassword("");
+//            user.setPassword("");
+//            user.setStrPassword("");
             data.put("user",user);
-            //将用户信息和返回状态封装到result中
-            dataResult.setStatus(SUCCESS);
-            dataResult.setData(data);
             //更新登录时间
             userDao.updateLastLoginTime(user);
             request.getSession().setAttribute("user",user);
-            return dataResult;
+            return DataResult.success(data);
         }
     }
 
@@ -126,19 +111,14 @@ public class Login {
     @RequestMapping(path = "/checkUser",produces ={"application/json;charset=utf-8"} )
     @ResponseBody
     public DataResult checkUser(@RequestBody String json) throws IOException {
-        DataResult dataResult=new DataResult();
         User user = mapper.readValue(json, User.class);
         String username = user.getUsername();
         //检查username是否存在
         List<User> cUser = userDao.checkUsername(username);
         if (cUser.size() <=0) {
-            dataResult.setStatus(SUCCESS);
-            dataResult.setMsg("用户名可用！");
-            return dataResult;
+            return DataResult.success("用户名可用！");
         } else {
-            dataResult.setStatus(FAILURE);
-            dataResult.setMsg("用户名已存在！");
-            return dataResult;
+            return DataResult.fail("用户名已存在！");
         }
     }
 
@@ -170,20 +150,22 @@ public class Login {
      * @return
      */
     @RequestMapping(path = "/setting")
-    public void setting(HttpServletRequest request,HttpServletResponse response) throws IOException {
-        response.setContentType("text/text;charset=utf-8");
+    @ResponseBody
+    public DataResult setting(HttpServletRequest request,HttpServletResponse response) throws IOException {
+//        response.setContentType("text/text;charset=utf-8");
         response.setCharacterEncoding("UTF-8");
         User user = (User) request.getSession().getAttribute("user");
-        String password = user.getPassword();
+        String password = user.getStrPassword();
         String oldPassword = request.getParameter("oldPassword");
         String newPassword = request.getParameter("newPassword");
         if(password.equals(oldPassword)){
             user.setPassword(newPassword);
             userDao.updatePassword(user);
-            response.getWriter().write("true");
+            request.getSession().setAttribute("user",user);
+            return DataResult.success();
         }
         else{
-            response.getWriter().write("false");
+            return DataResult.fail();
         }
     }
 
@@ -198,7 +180,6 @@ public class Login {
     @ResponseBody
     @RequestMapping(value = "/code", method = RequestMethod.GET)
     public void validateCode(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        //第一个参数是生成的验证码，第二个参数是生成的图片
         Object[] objs = CaptchaUtil.createImage();
         //将验证码存入Session
         request.getSession(true).setAttribute("loginCode",objs[0]);

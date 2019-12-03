@@ -7,7 +7,7 @@
     <script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script async="false" src="static/js/creatFile.js"></script>
-    <script src="static/js/bootstrap-treeview.js"></script>
+    <script async="false" src="static/js/pathUrl.js"></script>
     <script src="static/js/bootstrap-treeview.js"></script>
     <script>
         $(document).ready(function() {
@@ -43,7 +43,7 @@
         #titleUl{
             position:relative;
             left: 11%;
-            width: 89%;
+            width: 80%;
             top: 50%;
             height: 50px;
         }
@@ -67,8 +67,11 @@
 </head>
 <body>
 <div id="title">
-    <img src="/static/images/title.png" height="55%" width="50%" style="position:absolute; z-index:-1;top: 20%"/>
-    <div id="titleUser"><img src="/static/images/background.jpeg" alt="38*38" class="img-circle" style="width: 38px;height: 38px">&nbsp;&nbsp;<p id="nickname"></p>&nbsp;&nbsp;&nbsp;&nbsp;<a href="/file/transfer?transfer=setting">设置</a>&nbsp;&nbsp;<a href="/exit">退出</a></div>
+    <img src="static/images/title.png" height="55%" width="50%" style="position:absolute; z-index:-1;top: 20%"/>
+    <div id="titleUser"><img src="static/images/background.jpeg" alt="38*38" class="img-circle" style="width: 38px;height: 38px">&nbsp;&nbsp;<p id="nickname"></p>&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="transfer?transfer=setting">设置</a>&nbsp;&nbsp;
+        <a href="exit">退出</a>
+    </div>
     <ul class="nav nav-pills" id="titleUl">
         <li role="presentation"><a href="main">全部文件</a></li>
         <li role="presentation"><a href="file/search?type=video" id="video">视频</a></li>
@@ -128,11 +131,6 @@
     </div>
 </body>
 <script>
-    var pathArray = window.location.pathname.split('/');
-    var secondLevelLocation = pathArray[1];
-    var pathUrl = encodeURI(window.location.protocol+"//"+ window.location.host+"/"+secondLevelLocation);
-    var username=$.cookie("cookieUsername");
-    var userId=$.cookie("cookieUserId");
     var currentFolderId;
     var currentFolderName;
 
