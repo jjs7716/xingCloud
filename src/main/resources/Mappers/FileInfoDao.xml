@@ -167,7 +167,9 @@
         <bind name="search" value="'%' +searchName + '%'" />
         select * from fileinfo where file_uid=#{userId}
         and  file_state=0
-        and  file_name like #{search}
+        <if test="searchName !=null">
+            and  file_name like #{search}
+        </if>
     </select>
 
     <select id="searchByVideo" resultMap="fileMap">

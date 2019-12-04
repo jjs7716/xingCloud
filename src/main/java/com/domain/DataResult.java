@@ -1,8 +1,6 @@
 package com.domain;
 
-import org.springframework.stereotype.Repository;
 
-@Repository
 public class DataResult {
     private boolean status;   //响应状态码
     private String msg;   //响应信息

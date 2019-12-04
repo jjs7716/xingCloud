@@ -5,10 +5,10 @@ var fileKeyList;
 var folderIdList;
 function getList(select) {
     fileIdList={};
-    folderIdList={}
+    folderIdList={};
     //获取所有选中的文件ID并转换成列表
     fileIdList=$(":checkbox[name='fileId']:checked").map(function () { return $(this).val() }).get();
-    if(select==null) {
+    if(select != undefined && select ==null) {
         //将文件的id和key选中状态同步
         for (var i = 0; i < $("input[name='fileId']").length; i++) {
             if ($("#fileId" + i).prop("checked")) {

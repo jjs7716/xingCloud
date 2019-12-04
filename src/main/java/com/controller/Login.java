@@ -82,6 +82,9 @@ public class Login {
         String error2="用户名或密码错误!";
         //获得存在session中的验证码和用户输入的验证码比对
         String code = (String) request.getSession().getAttribute("loginCode");
+        if(Objects.isNull(code)){
+            return DataResult.fail(error1);
+        }
         if(!code.equalsIgnoreCase(user.getLoginCode())){
             //验证码错误，返回错误信息
             return DataResult.fail(error1);

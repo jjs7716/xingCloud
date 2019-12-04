@@ -13,10 +13,7 @@ import com.services.FolderInfoDaoImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import utils.BaseUtil;
@@ -69,12 +66,11 @@ public class FileController {
      * @return
      */
     @RequestMapping(path = "/main")
-    public DataResult main(HttpServletRequest request) {
+    public DataResult main(HttpServletRequest request,String currentFolderId) {
         User user= BaseUtil.getUser(request);
         if(user==null){
             return DataResult.fail();
         }
-        String currentFolderId = request.getParameter("currentFolderId");
         FilePrams filePrams=new FilePrams(user.getUserId());
         filePrams.setFolderId(currentFolderId);
         List<FileInfo> fileList = fileInfoDao.queryFile(filePrams);
@@ -294,17 +290,21 @@ public class FileController {
      * @return
      */
     @RequestMapping(path = "/search")
+    @ResponseBody
     public DataResult search(HttpServletRequest request, @RequestBody String json) throws IOException {
         Map<String,Object> data = mapper.readValue(json, Map.class);
         String userId = BaseUtil.getUserId(request);
         String type = (String) data.get("type");
         String search = (String) data.get("search");
-        search=(search==null)?"":search;
+//        search=(search==null)?"":search;
         List<FileInfo> fileList;
-        if(type==null){
+        if(Objects.isNull(type)&&Objects.equals("",search)){
+            return main(request,"");
+        }
+        if(!Objects.equals("",search)){
             fileList=fileInfoDao.search(userId,search);
             data.put("fileList",fileList);
-            return main(request);
+            return DataResult.success(data);
         }else{
             type="."+type;
             if(video.equals(type)){
@@ -319,9 +319,9 @@ public class FileController {
                 fileList=fileInfoDao.searchByOther(userId);
             }
             data.put("fileList",fileList);
-            DataResult dataResult=main(request);
-            dataResult.setData(data);
-            return dataResult;
+//            DataResult dataResult=main(request);
+//            dataResult.setData(data);
+            return DataResult.success(data);
         }
     }
 

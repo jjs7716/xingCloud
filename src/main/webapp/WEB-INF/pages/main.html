@@ -7,11 +7,11 @@
     <script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script async="false" src="static/js/creatFile.js"></script>
-    <script async="false" src="static/js/pathUrl.js"></script>
+    <script src="static/js/pathUrl.js"></script>
     <script src="static/js/bootstrap-treeview.js"></script>
     <script>
         $(document).ready(function() {
-            // 根据网址激活导航条
+            // // 根据网址激活导航条
             var url = window.location;
             $('ul.nav a[href="'+ url +'"]').parent().addClass('active');
             $('div.btn-group-vertical a[href="'+ url +'"]').parent().addClass('active');
@@ -21,7 +21,6 @@
             $('div.btn-group-vertical a').filter(function() {
                 return this.href == url;
             }).parent().addClass('active');
-
             $("#nickname").text();
         });
     </script>
@@ -73,21 +72,22 @@
         <a href="exit">退出</a>
     </div>
     <ul class="nav nav-pills" id="titleUl">
-        <li role="presentation"><a href="main">全部文件</a></li>
-        <li role="presentation"><a href="file/search?type=video" id="video">视频</a></li>
-        <li role="presentation"><a href="file/search?type=music" id="music">音乐</a></li>
-        <li role="presentation"><a href="file/search?type=doc" id="doc">文档</a></li>
-        <li role="presentation"><a href="file/search?type=img" id="img">图片</a></li>
-        <form class="navbar-form " role="search" id="titleForm" action="file/search">
+        <input id="searchType" value="mainFile" hidden>
+        <li role="presentation" class="active"><a href="transfer?transfer=main" id="mainFile">全部文件</a></li>
+        <li role="presentation"><a href="javascript:void(0);" onclick=searchType("video") id="videoFile">视频</a></li>
+        <li role="presentation"><a href="javascript:void(0);" onclick=searchType("music") id="musicFile">音乐</a></li>
+        <li role="presentation"><a href="javascript:void(0);" onclick=searchType("doc") id="docFile">文档</a></li>
+        <li role="presentation"><a href="javascript:void(0);" onclick=searchType("img") id="imgFile">图片</a></li>
+        <form class="navbar-form " role="search" id="titleForm" action="file/search" >
             <div class="form-group">
                 <input type="text" class="form-control" name="search" id="search" value="" placeholder="搜索你的文件">
             </div>
-            <button type="submit" class="btn btn-default" id="doSearch">查找</button>
+            <button type="button" class="btn btn-default" id="doSearch" onclick="searchType()">查找</button>
         </form>
     </ul>
 </div>
 <div id="left" class="btn-group-vertical btn-group-lg" role="group" aria-label="...">
-    <button type="button" class="btn btn-default" onclick="location='transfer?transfer=main'">我的文件</button>
+    <button type="button" class="btn btn-primary" onclick="location='transfer?transfer=main'">我的文件</button>
     <button type="button" class="btn btn-default" onclick="">我的好友</button>
     <button type="button" class="btn btn-default" onclick="">我的分享</button>
     <button type="button" class="btn btn-default" onclick="location='transfer?transfer=recycle'">回收站</button>
@@ -139,6 +139,28 @@
         main(currentFolderId);
     });
 
+    //搜索
+    function searchType(data) {
+        $("#dir").empty();
+        let val = $("#searchType").val();
+        $("#"+val).parent().removeClass('active');
+        $("#searchType").val(data+"File");
+        $("#"+data+"File").parent().addClass('active');
+        let json={
+            "type":data,
+            "search":$("#search").val()
+        };
+        $.ajax({
+            url: pathUrl + "/file/search",
+            data:JSON.stringify(json),
+            contentType: 'application/json; charset=UTF-8',
+            dataType: "json",
+            type: "post",
+            success: function (result) {
+                creatMainList(result);
+            }
+        });
+    }
     //执行主方法
     function main(currentFolderId) {
         if(currentFolderId==null){
@@ -146,18 +168,14 @@
         }
         $.ajax({
             url: pathUrl + "/file/main",
-            data:{"currentFolderId":currentFolderId},
+            data:{
+                "currentFolderId":currentFolderId
+            },
             // contentType: 'application/json; charset=UTF-8',
             dataType: "json",
             type: "post",
             success: function (result) {
-                if (result.status == true) {
-                     folderList = result.data.folderList;
-                    fileList = result.data.fileList;
-                    creatMainList(folderList,fileList);
-                } else {
-                    $("#error").text(result.msg);
-                }
+                creatMainList(result);
             }
         });
     }
@@ -217,10 +235,21 @@
     }
 
     //创建主页面列表
-    function creatMainList(folderList,fileList) {
-        $("#tbody").empty();
-        creatFolderList(folderList);
-        creatFileList(fileList);
+    function creatMainList(result) {
+        if (result.success == true) {
+            let folderList = result.data.folderList;
+            let fileList = result.data.fileList;
+            $("#tbody").empty();
+            if(folderList!=undefined){
+                creatFolderList(folderList);
+            }
+            if(fileList!=undefined){
+                creatFileList(fileList);
+            }
+        } else {
+            $("#error").text(result.msg);
+        }
+
     }
 
     //下载文件夹
@@ -236,7 +265,10 @@
     //批量下载
     function batchDownFile() {
         getList();
+        console.log(fileIdList);
+        console.log(JSON.stringify(fileIdList));
         document.forms.namedItem("mainId").action="file/downloads";
+        document.forms.namedItem("mainId").method="post";
         document.forms.namedItem("mainId").submit();
     }
 
@@ -395,9 +427,7 @@
             function(result){
                 currentFolderId=folderId;
                 currentFolderName=result.data.currentFolderName;
-                folderList=result.data.folderList;
-                fileList=result.data.fileList;
-                creatMainList(folderList,fileList);
+                creatMainList(result);
                 let nameList=result.data.nameList;
                 let idList=result.data.idList;
                 let idLength=idList.length;
@@ -411,7 +441,7 @@
                 console.log(currentFolderId);
                 console.log(currentFolderName);
                 $("#dir").text("");
-                $("#dir").append("<a href='javascript:void(0);' onclick='folder(&quot;"+backFolder+"&quot;)'>返回上一层</a>|");
+                $("#dir").append("<a href='javascript:void(0);' onclick='folder(&quot;"+backFolder+"&quot;)'>返回上一级</a>|");
                 for (let i = 0; i < idLength; i++) {
                     $("#dir").append("<a href='javascript:void(0);' onclick='folder(&quot;"+idList[i]+"&quot;)'>"+nameList[i]+"</a>/");
                 }
