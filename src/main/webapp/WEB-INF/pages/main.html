@@ -6,24 +6,24 @@
     <script src="static/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-    <script async="false" src="static/js/creatFile.js"></script>
+    <script src="static/js/creatFile.js"></script>
     <script src="static/js/pathUrl.js"></script>
     <script src="static/js/bootstrap-treeview.js"></script>
-    <script>
-        $(document).ready(function() {
-            // // 根据网址激活导航条
-            var url = window.location;
-            $('ul.nav a[href="'+ url +'"]').parent().addClass('active');
-            $('div.btn-group-vertical a[href="'+ url +'"]').parent().addClass('active');
-            $('ul.nav a').filter(function() {
-                return this.href == url;
-            }).parent().addClass('active');
-            $('div.btn-group-vertical a').filter(function() {
-                return this.href == url;
-            }).parent().addClass('active');
-            $("#nickname").text();
-        });
-    </script>
+<!--    <script>-->
+<!--        $(document).ready(function() {-->
+<!--            // // 根据网址激活导航条-->
+<!--            var url = window.location;-->
+<!--            $('ul.nav a[href="'+ url +'"]').parent().addClass('active');-->
+<!--            $('div.btn-group-vertical a[href="'+ url +'"]').parent().addClass('active');-->
+<!--            $('ul.nav a').filter(function() {-->
+<!--                return this.href == url;-->
+<!--            }).parent().addClass('active');-->
+<!--            $('div.btn-group-vertical a').filter(function() {-->
+<!--                return this.href == url;-->
+<!--            }).parent().addClass('active');-->
+<!--            $("#nickname").text();-->
+<!--        });-->
+<!--    </script>-->
     <style>
         #title{
             width: 100%;
@@ -141,6 +141,7 @@
 
     //搜索
     function searchType(data) {
+        removeCheckAll();
         $("#dir").empty();
         let val = $("#searchType").val();
         $("#"+val).parent().removeClass('active');
@@ -237,8 +238,8 @@
     //创建主页面列表
     function creatMainList(result) {
         if (result.success == true) {
-            let folderList = result.data.folderList;
-            let fileList = result.data.fileList;
+            folderList = result.data.folderList;
+            fileList = result.data.fileList;
             $("#tbody").empty();
             if(folderList!=undefined){
                 creatFolderList(folderList);
@@ -419,6 +420,7 @@
 
     //进入文件夹
     function folder(folderId) {
+        removeCheckAll();
         let backFolder;
         $.get(pathUrl+"/folder/folder",
             {
@@ -555,6 +557,10 @@
             }
         }
         )
+    }
+
+    function removeCheckAll(){
+        $("#checkAll").removeAttr("checked");
     }
 </script>
 </html>
